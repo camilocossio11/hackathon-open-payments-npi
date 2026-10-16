@@ -15,6 +15,8 @@ print(f"[startup] CALLBACK_BASE_URL = {CALLBACK_BASE_URL}")
 app = FastAPI()
 pending_payments: dict[str, dict] = {}
 
+ABBO_WALLET_ADDRESS = "https://ilp.interledger-test.dev/abbo"
+
 
 def make_client(sender_wallet: str) -> OpenPaymentsInterface:
     entry = get_key_for_wallet(sender_wallet)
@@ -31,27 +33,28 @@ def make_client(sender_wallet: str) -> OpenPaymentsInterface:
     )
 
 
-@app.post("/keys/generate")
-def generate_key_pair(req: GenerateKeyRequest):
-    key_pair = generate_keys(req.wallet)
-    return {
-        "kid": key_pair["kid"],
-        "public_key_b64": key_pair["public_key_b64"],
-        "public_key_pem": key_pair["public_key_pem"],
-        "jwks": key_pair["jwks"],
-        "message": f"Paste public_key_b64 into the 'Public key' field of wallet {req.wallet}.",
-    }
+# @app.post("/keys/generate")
+# def generate_key_pair(req: GenerateKeyRequest):
+#     key_pair = generate_keys(req.wallet)
+#     return {
+#         "kid": key_pair["kid"],
+#         "public_key_b64": key_pair["public_key_b64"],
+#         "public_key_pem": key_pair["public_key_pem"],
+#         "jwks": key_pair["jwks"],
+#         "message": f"Paste public_key_b64 into the 'Public key' field of wallet {req.wallet}.",
+#     }
 
 
 @app.post("/payments/initiate")
 def initiate_payment(req: InitiatePaymentRequest):
-    client = make_client(req.sender_wallet)
+    client = make_client(ABBO_WALLET_ADDRESS)
     redirect_url, outgoing_grant, sender_resource_server, nonce, quote_id = (
         client.create_payment_request(
             receiver_wallet=req.receiver_wallet,
             amount_value=req.amount_value,
             order_id=req.order_id,
             callback_base_url=CALLBACK_BASE_URL,
+            sender_wallet=req.sender_wallet
         )
     )
 
@@ -76,7 +79,7 @@ def payment_callback(
     if state is None:
         raise HTTPException(status_code=404, detail=f"No pending payment for order '{order_id}'")
 
-    client = make_client(state["sender_wallet"])
+    client = make_client(ABBO_WALLET_ADDRESS)
     outgoing_token = client.continue_outgoing_payment_grant(
         outgoing_grant=state["outgoing_grant"],
         interact_ref=interact_ref,
@@ -85,6 +88,7 @@ def payment_callback(
         resource_server=state["sender_resource_server"],
         outgoing_token=outgoing_token,
         quote_id=state["quote_id"],
+        sender_wallet=state["sender_wallet"]
     )
 
     return {"status": "completed", "payment_id": str(payment_id), "order_id": order_id}

@@ -11,6 +11,7 @@ from open_payments_sdk.models.resource import (
     IncomingPaymentRequest,
     OutgoingPayment,
     OutgoingPaymentRequestWithQuote,
+    QuoteFixedSent,
     QuoteRequestBase,
     WalletAddress,
 )
@@ -95,12 +96,28 @@ class OpenPaymentsInterface:
         grant = self.client.grants.post_grant_request(grant_req, auth_server)
         return grant.root.access_token.value
 
-    def create_quote(self, resource_server: str, access_token: str, incoming_payment_url: str):
-        quote_req = QuoteRequestBase.model_construct(
-            walletAddress=WalletAddress.model_validate(self.client.client_wallet_address),
-            receiver=incoming_payment_url,
-            method="ilp",
-        )
+    def create_quote(
+        self,
+        resource_server: str,
+        access_token: str,
+        incoming_payment_url: str,
+        sender_wallet: str,
+        debit_amount: Amount | None = None,
+    ):
+        
+        if debit_amount is None:
+            quote_req = QuoteRequestBase.model_construct(
+                walletAddress=WalletAddress.model_validate(sender_wallet),
+                receiver=incoming_payment_url,
+                method="ilp",
+            )
+        else:
+            quote_req = QuoteFixedSent.model_construct(
+                walletAddress=WalletAddress.model_validate(sender_wallet),
+                receiver=incoming_payment_url,
+                method="ilp",
+                debitAmount=debit_amount,
+            )
         try:
             quote = self.client.quotes.post_create_quote(
                 quote=quote_req,
@@ -115,15 +132,15 @@ class OpenPaymentsInterface:
 
     def request_outgoing_payment_grant(
         self,
-        receiver_wallet: str,
         incoming_payment_url: str,
         finish_uri: str,
         nonce: str,
         amount_value: str,
         asset_code: str,
         asset_scale: int,
+        sender_wallet: str,
     ):
-        auth_server = self.discover_receiver_servers(receiver_wallet)["auth_server"]
+        auth_server = self.discover_receiver_servers(sender_wallet)["auth_server"]
         outgoing_grant_req = GrantRequest(
             **{
                 "access_token": {
@@ -131,7 +148,7 @@ class OpenPaymentsInterface:
                         {
                             "type": "outgoing-payment",
                             "actions": ["create", "read"],
-                            "identifier": self.client.client_wallet_address,
+                            "identifier": sender_wallet,
                             "limits": {
                                 "receiver": incoming_payment_url,
                                 "debitAmount": {
@@ -173,9 +190,10 @@ class OpenPaymentsInterface:
         resource_server: str,
         outgoing_token: str,
         quote_id: str,
+        sender_wallet: str,
     ):
         payment = OutgoingPaymentRequestWithQuote.model_construct(
-            walletAddress=WalletAddress.model_validate(self.client.client_wallet_address),
+            walletAddress=WalletAddress.model_validate(sender_wallet),
             quoteId=quote_id,
         )
         print("Outgoing payment body:", payment.model_dump(exclude_unset=True, mode="json"))
@@ -191,7 +209,7 @@ class OpenPaymentsInterface:
         return outgoing.id
 
     def create_payment_request(
-        self, receiver_wallet: str, amount_value: str, order_id: str, callback_base_url: str
+        self, receiver_wallet: str, amount_value: str, order_id: str, callback_base_url: str, sender_wallet: str
     ):
         nonce = secrets.token_urlsafe(16)
         finish_uri = f"{callback_base_url}/{order_id}"
@@ -209,22 +227,23 @@ class OpenPaymentsInterface:
             asset_scale=receiver_info["asset_scale"],
         )
 
-        sender_info = self.discover_receiver_servers(self.client.client_wallet_address)
-        quote_token = self.request_quote_grant(self.client.client_wallet_address)
+        sender_info = self.discover_receiver_servers(sender_wallet)
+        quote_token = self.request_quote_grant(sender_wallet)
         quote = self.create_quote(
             resource_server=sender_info["resource_server"],
             access_token=quote_token,
             incoming_payment_url=incoming_payment_url,
+            sender_wallet=sender_wallet,
         )
 
         redirect_url, outgoing_grant = self.request_outgoing_payment_grant(
-            receiver_wallet=receiver_wallet,
             incoming_payment_url=incoming_payment_url,
             finish_uri=finish_uri,
             nonce=nonce,
             amount_value=str(quote.debitAmount.value),
             asset_code=str(quote.debitAmount.assetCode.root),
             asset_scale=int(quote.debitAmount.assetScale.root),
+            sender_wallet=sender_wallet
         )
 
         return (
@@ -235,15 +254,15 @@ class OpenPaymentsInterface:
             str(quote.id),
         )
 
-    def make_payment(self, order_id: str, state: dict, interact_ref: str):
-        outgoing_token = self.continue_outgoing_payment_grant(
-            outgoing_grant=state["outgoing_grant"],
-            interact_ref=interact_ref,
-        )
-        payment_id = self.create_outgoing_payment(
-            resource_server=state["sender_resource_server"],
-            outgoing_token=outgoing_token,
-            quote_id=state["quote_id"],
-        )
+    # def make_payment(self, order_id: str, state: dict, interact_ref: str):
+    #     outgoing_token = self.continue_outgoing_payment_grant(
+    #         outgoing_grant=state["outgoing_grant"],
+    #         interact_ref=interact_ref,
+    #     )
+    #     payment_id = self.create_outgoing_payment(
+    #         resource_server=state["sender_resource_server"],
+    #         outgoing_token=outgoing_token,
+    #         quote_id=state["quote_id"],
+    #     )
 
-        return {"status": "completed", "payment_id": str(payment_id), "order_id": order_id}
+    #     return {"status": "completed", "payment_id": str(payment_id), "order_id": order_id}

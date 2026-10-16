@@ -9,3 +9,4 @@ Only code changes to project scripts are logged. Questions, explanations and sug
 
 | Date | File Path | Intervention Level | Description |
 |------|-----------|--------------------|-------------|
+| 2026-10-16 | `src/interfaces/open_payment.py` | Minor Edit / Few Lines | `create_quote`: added optional `debit_amount` to create a fixed-send quote (`QuoteFixedSent`), and a comment explaining why `model_construct` is used (SDK `check_path` validator sets `receiver` to `None`). |
