@@ -6,5 +6,9 @@
   "https://ilp.interledger-test.dev/5d4b8d27": {
     "kid": "30cf97cc-53f4-4441-a1d5-552501717553",
     "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIAbBLp5Bxrok5LnyFGgUusScdk0A1p2ZnlEM/dMzk5UJ\n-----END PRIVATE KEY-----\n"
+  },
+  "https://ilp.interledger-test.dev/third-party": {
+    "kid": "4c9b48e5-7c13-446b-adb1-7a0e5a050458",
+    "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIKunb6Lqj5I1Lz2+KQRg0d+rJCKYHk1L4dh9ajl65bLy\n-----END PRIVATE KEY-----\n"
   }
 }
