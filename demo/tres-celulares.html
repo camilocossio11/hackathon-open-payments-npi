@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050d0a">
+<title>Abbo En Vivo</title>
+<style>
+  :root {
+    --bg: #e9f1ed;
+    --blob-1: rgba(16, 185, 129, .35); --blob-2: rgba(45, 212, 191, .30); --blob-3: rgba(245, 158, 11, .22); --blob-4: rgba(99, 102, 241, .18);
+    --glass: rgba(255, 255, 255, .55); --glass-2: rgba(255, 255, 255, .62); --glass-3: rgba(255, 255, 255, .85);
+    --glass-border: rgba(10, 40, 28, .12); --glass-hi: rgba(255, 255, 255, .7);
+    --text: #0b1f16; --muted: #3c5047; --brand-text: #046c4e;
+    --btn-bg: linear-gradient(135deg, #34d399, #2dd4bf); --btn-ink: #03271c;
+    --track: rgba(10, 40, 28, .10); --fill: linear-gradient(90deg, #10b981, #14b8a6); --fill-full: linear-gradient(90deg, #f59e0b, #fbbf24);
+    --warn-ink: #6b4300; --danger: #a61b1b; --focus: #1d4ed8; --glow: rgba(16, 185, 129, .55);
+    --wallet: linear-gradient(135deg, rgba(49, 46, 129, .92), rgba(30, 58, 138, .92)); --wallet-ink: #ffffff;
+    --shadow: 0 30px 80px rgba(10, 40, 28, .18);
+    --overlay: rgba(255, 255, 255, .94);
+    --blur: blur(26px) saturate(160%);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #040b08;
+      --blob-1: rgba(16, 185, 129, .30); --blob-2: rgba(20, 184, 166, .22); --blob-3: rgba(245, 158, 11, .14); --blob-4: rgba(99, 102, 241, .16);
+      --glass: rgba(255, 255, 255, .055); --glass-2: rgba(255, 255, 255, .07); --glass-3: rgba(255, 255, 255, .12);
+      --glass-border: rgba(255, 255, 255, .13); --glass-hi: rgba(255, 255, 255, .16);
+      --text: #effcf6; --muted: #a9c5b9; --brand-text: #6ee7b7;
+      --track: rgba(255, 255, 255, .10);
+      --warn-ink: #fcd34d; --danger: #fca5a5; --focus: #93c5fd; --glow: rgba(52, 211, 153, .55);
+      --shadow: 0 30px 90px rgba(0, 0, 0, .55);
+      --overlay: rgba(12, 26, 20, .94);
+      color-scheme: dark;
+    }
+  }
+  /* Opaque surfaces for people who ask for less transparency */
+  @media (prefers-reduced-transparency: reduce) {
+    :root { --glass: #f4f8f6; --glass-2: #ffffff; --glass-3: #ffffff; --blur: none; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glass: #0f1a15; --glass-2: #16231d; --glass-3: #1d2c25; } }
+  }
+  /* High contrast: no transparency, black on white */
+  :root[data-contrast="high"] {
+    --bg: #ffffff; --blob-1: transparent; --blob-2: transparent; --blob-3: transparent; --blob-4: transparent;
+    --glass: #ffffff; --glass-2: #ffffff; --glass-3: #ffffff; --glass-border: #000000; --glass-hi: transparent;
+    --text: #000000; --muted: #000000; --brand-text: #00402b;
+    --btn-bg: #00402b; --btn-ink: #ffffff; --track: #ffffff; --fill: #00402b; --fill-full: #000000;
+    --warn-ink: #000000; --danger: #8a0000; --focus: #0000ff; --glow: #0000ff;
+    --wallet: #000000; --shadow: none; --blur: none; --overlay: #ffffff; color-scheme: light;
+  }
+  :root[data-contrast="high"] .card, :root[data-contrast="high"] .phone, :root[data-contrast="high"] .chip,
+  :root[data-contrast="high"] .feed li, :root[data-contrast="high"] .bar { border-width: 2px !important; }
+
+  html { font-size: 112.5%; }
+  html[data-size="1"] { font-size: 125%; }
+  html[data-size="2"] { font-size: 143.75%; }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100dvh; display: flex; flex-direction: column; color: var(--text); background-color: var(--bg);
+    background-image:
+      radial-gradient(40vw 40vw at 8% 12%, var(--blob-1), transparent 70%),
+      radial-gradient(36vw 36vw at 92% 18%, var(--blob-2), transparent 70%),
+      radial-gradient(42vw 42vw at 55% 105%, var(--blob-3), transparent 70%),
+      radial-gradient(30vw 30vw at 30% 70%, var(--blob-4), transparent 70%);
+    background-attachment: fixed;
+    font-family: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    flex: none; padding: 10px 20px; background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 11px; background: var(--btn-bg); display: grid; place-items: center; color: var(--btn-ink); font-size: 1rem; box-shadow: 0 6px 20px var(--glow); }
+  .logo small { font-weight: 600; font-size: .75rem; color: var(--muted); letter-spacing: 0; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  .date-pill { font-weight: 700; font-size: .85rem; padding: 8px 14px; border-radius: 999px; background: var(--glass-2); border: 1px solid var(--glass-border); }
+  .spacer { flex: 1; }
+  .ctl-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .ctl-group + .ctl-group { padding-left: 12px; border-left: 1px solid var(--glass-border); }
+  .pill {
+    min-height: 44px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2);
+    color: var(--text); font: inherit; font-size: .74rem; font-weight: 650; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill:hover { background: var(--glass-3); }
+  .pill[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
+
+  /* ---------- Stage ---------- */
+  .stage { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: stretch; gap: clamp(12px, 2vw, 36px); padding: 16px 16px 20px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 0; }
+  .col-label { text-align: center; }
+  .col-label .step { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--btn-bg); color: var(--btn-ink); font-weight: 800; font-size: .8rem; margin-right: 8px; }
+  .col-label strong { font-size: 1rem; }
+  .col-label div { font-size: .8rem; color: var(--muted); }
+  .flow { align-self: center; font-size: 1.6rem; color: var(--muted); opacity: .7; }
+
+  .phone {
+    --pw: clamp(300px, 29vw, 380px);
+    width: var(--pw); flex: 1; min-height: 520px; max-height: 860px;
+    position: relative; display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 46px; background: var(--glass); border: 1px solid var(--glass-border);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    box-shadow: var(--shadow), inset 0 1px 0 var(--glass-hi);
+  }
+  .phone::after { /* soft rim light */
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: linear-gradient(160deg, var(--glass-hi), transparent 30%);
+    opacity: .5;
+  }
+  :root[data-contrast="high"] .phone::after { display: none; }
+  .phone.ping { animation: ping 1.6s ease-out; }
+  @keyframes ping { 0% { box-shadow: var(--shadow), 0 0 0 0 var(--glow); } 30% { box-shadow: var(--shadow), 0 0 0 10px var(--glow); } 100% { box-shadow: var(--shadow), 0 0 0 0 transparent; } }
+
+  .notch { width: 110px; height: 28px; border-radius: 999px; background: rgba(0,0,0,.85); margin: 10px auto 0; flex: none; }
+  :root[data-contrast="high"] .notch { background: #000; }
+  .statusbar { display: flex; justify-content: space-between; padding: 0 26px; margin-top: -22px; font-size: .68rem; font-weight: 700; color: var(--muted); height: 18px; }
+  .appbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; border-bottom: 1px solid var(--glass-border); }
+  .avatar { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; font-size: 1.3rem; background: var(--glass-3); border: 1px solid var(--glass-border); flex: none; }
+  .who { flex: 1; min-width: 0; }
+  .who-name { font-weight: 750; font-size: .95rem; line-height: 1.2; }
+  .who-role { font-size: .75rem; color: var(--muted); }
+  .speak { width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--glass-2); color: var(--text); font-size: 1.05rem; cursor: pointer; }
+  .speak[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-ink); }
+
+  .screen { flex: 1; overflow-y: auto; padding: 18px 16px 24px; overscroll-behavior: contain; scrollbar-width: thin; }
+  .screen h2 { font-size: 1.35rem; line-height: 1.2; letter-spacing: -.015em; margin: 0 0 4px; }
+  .screen h2:focus { outline: none; }
+  .screen h2:focus-visible { outline: 3px solid var(--focus); }
+  .screen h3 { font-size: 1rem; margin: 20px 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 14px; font-size: .92rem; }
+
+  .toast {
+    position: absolute; left: 12px; right: 12px; bottom: 16px; z-index: 5; padding: 12px 14px; border-radius: 18px;
+    background: var(--overlay); border: 1px solid var(--glass-border); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    font-weight: 650; font-size: .88rem; box-shadow: 0 12px 30px rgba(0,0,0,.25); display: flex; gap: 10px; align-items: center;
+    opacity: 0; transform: translateY(12px); pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+
+  /* ---------- Components ---------- */
+  .card { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: 22px; padding: 16px; margin: 0 0 12px; }
+  .card.hero { background: linear-gradient(135deg, rgba(52, 211, 153, .22), rgba(45, 212, 191, .10)); }
+  :root[data-contrast="high"] .card.hero { background: #fff; }
+  .card.note { color: var(--warn-ink); background: linear-gradient(135deg, rgba(245, 158, 11, .16), rgba(245, 158, 11, .06)); }
+  :root[data-contrast="high"] .card.note { background: #fff; }
+  .big { font-size: 2rem; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+  .mid { font-size: 1.25rem; font-weight: 750; letter-spacing: -.01em; }
+  .small { font-size: .82rem; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 54px; margin-top: 10px;
+    padding: 12px 18px; border-radius: 18px; border: 0; background: var(--btn-bg); color: var(--btn-ink);
+    font: inherit; font-weight: 750; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 26px -8px var(--glow);
+  }
+  .btn.ghost { background: var(--glass-2); color: var(--text); border: 1px solid var(--glass-border); box-shadow: none; font-weight: 650; }
+  .btn[disabled] { opacity: .4; cursor: not-allowed; box-shadow: none; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 46px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2);
+    color: var(--text); font: inherit; font-size: .9rem; font-weight: 650; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
+  .chip[aria-pressed="true"]::before { content: "✓ "; }
+  fieldset { border: 0; padding: 0; margin: 0 0 16px; min-width: 0; }
+  legend, .label { font-weight: 700; margin-bottom: 8px; padding: 0; display: block; font-size: .95rem; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] { flex: 1; min-width: 0; height: 44px; accent-color: #10b981; }
+  input[type="number"] {
+    width: 5.4em; min-height: 46px; padding: 8px 10px; font: inherit; font-weight: 700; color: var(--text);
+    background: var(--glass-3); border: 1px solid var(--glass-border); border-radius: 14px;
+  }
+  input[aria-invalid="true"] { border: 2px solid var(--danger); }
+  .field { margin-bottom: 16px; }
+  .err { color: var(--danger); font-weight: 700; margin: 6px 0 0; font-size: .9rem; }
+  ul.facts { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
+  ul.facts li { display: grid; grid-template-columns: 2.2rem 1fr; gap: 8px; align-items: center; font-size: .93rem; }
+  ul.facts .ico { width: 2.2rem; height: 2.2rem; border-radius: 12px; display: grid; place-items: center; background: var(--glass-2); border: 1px solid var(--glass-border); }
+
+  .stepper { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .stepper button { width: 52px; height: 52px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass-3); color: var(--text); font-size: 1.5rem; font-weight: 700; cursor: pointer; }
+  .stepper output { text-align: center; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+
+  .bar { height: 12px; border-radius: 999px; background: var(--track); border: 1px solid var(--glass-border); overflow: hidden; margin: 6px 0 4px; }
+  .bar > span { display: block; height: 100%; background: var(--fill); border-radius: 999px; }
+  .bar.full > span { background: var(--fill-full); }
+  .ring-wrap { display: flex; align-items: center; gap: 14px; }
+  .ring { width: 112px; height: 112px; flex: none; }
+  .ring circle { fill: none; stroke-width: 12; }
+  .ring .bg { stroke: var(--track); }
+  .ring .fg { stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  :root[data-contrast="high"] .ring .fg { stroke: #00402b; }
+  .ring text { fill: var(--text); font-weight: 800; font-family: inherit; }
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; font-weight: 700; font-size: .78rem; color: var(--brand-text); background: rgba(16, 185, 129, .14); border: 1px solid rgba(16, 185, 129, .45); }
+  .status.wait { color: var(--warn-ink); background: rgba(245, 158, 11, .14); border-color: rgba(245, 158, 11, .5); }
+  :root[data-contrast="high"] .status { background: #fff; border: 2px solid #000; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--glass-border); font-size: .9rem; }
+  .kv:last-child { border-bottom: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 750; text-align: right; }
+  dl { margin: 0; }
+
+  ul.feed { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  ul.feed li { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: 18px; padding: 11px 12px; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; }
+  ul.feed .ico { width: 2.2rem; height: 2.2rem; border-radius: 12px; display: grid; place-items: center; background: var(--glass-3); font-size: 1.05rem; }
+  ul.feed .t { font-weight: 750; font-size: .93rem; }
+  ul.feed .d { font-size: .86rem; }
+  ul.feed li.fresh { border-color: rgba(16, 185, 129, .7); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .68rem; color: var(--muted); word-break: break-all; }
+  .empty { text-align: center; padding: 50px 10px 20px; }
+  .empty .ico { font-size: 3rem; width: 88px; height: 88px; margin: 0 auto 14px; border-radius: 28px; display: grid; place-items: center; background: var(--glass-2); border: 1px solid var(--glass-border); }
+
+  /* Client store */
+  .products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .product {
+    position: relative; min-height: 92px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass-2);
+    color: var(--text); font: inherit; cursor: pointer; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-align: center;
+  }
+  .product .emo { font-size: 1.6rem; line-height: 1.15; }
+  .product .pn { font-weight: 600; font-size: .74rem; line-height: 1.2; }
+  .product .pp { font-weight: 800; font-size: .82rem; }
+  .product .count { position: absolute; top: 5px; right: 5px; min-width: 22px; height: 22px; border-radius: 11px; background: var(--btn-bg); color: var(--btn-ink); font-weight: 800; font-size: .72rem; display: grid; place-items: center; padding: 0 5px; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg label {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; padding: 6px 4px;
+    border-radius: 16px; border: 1px solid var(--glass-border); background: var(--glass-2); cursor: pointer; font-weight: 650; font-size: .76rem; text-align: center;
+  }
+  .seg .ico { font-size: 1.25rem; }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg label:has(input:checked) { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
+  .seg label:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .paybar {
+    position: sticky; bottom: -24px; margin: 14px -16px -24px; padding: 12px 16px 18px;
+    background: var(--overlay); border-top: 1px solid var(--glass-border); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  }
+  .paybar .row { justify-content: space-between; }
+  .paybar .btn { margin-top: 6px; }
+  .banner { display: flex; gap: 10px; align-items: center; }
+  .banner .ico { font-size: 1.5rem; }
+
+  /* Wallet consent: looks like a different app on purpose */
+  .wallet-head { margin: -18px -16px 16px; padding: 16px; background: var(--wallet); color: var(--wallet-ink); }
+  .wallet-head .wt { font-weight: 800; }
+  .perm { border-radius: 20px; padding: 14px; margin-bottom: 10px; background: var(--glass-2); border: 1px solid rgba(99, 102, 241, .45); }
+  :root[data-contrast="high"] .perm { border: 2px solid #000; }
+  .perm .pt { font-weight: 800; }
+  .perm-num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--wallet); color: var(--wallet-ink); font-weight: 800; font-size: .8rem; margin-right: 6px; }
+
+  /* Money flying between phones */
+  .coin {
+    position: fixed; z-index: 50; left: 0; top: 0; pointer-events: none; padding: 8px 14px; border-radius: 999px;
+    background: var(--btn-bg); color: var(--btn-ink); font-weight: 800; font-size: .95rem; box-shadow: 0 10px 30px var(--glow); white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .toast { transition: opacity .3s, transform .3s; }
+    .bar > span { transition: width .7s cubic-bezier(.2, .8, .2, 1); }
+    .ring .fg { transition: stroke-dashoffset .8s cubic-bezier(.2, .8, .2, 1); }
+    ul.feed li.fresh { animation: fresh 1.4s ease-out; }
+    @keyframes fresh { 0% { transform: translateY(-6px) scale(.98); opacity: 0; box-shadow: 0 0 0 0 var(--glow); } 35% { opacity: 1; transform: none; box-shadow: 0 0 0 6px var(--glow); } 100% { box-shadow: 0 0 0 0 transparent; } }
+    .live-dot { animation: blink 1.6s infinite; }
+    @keyframes blink { 50% { opacity: .3; } }
+  }
+  @media (prefers-reduced-motion: reduce) { .phone.ping { animation: none; outline: 3px solid var(--glow); } }
+
+  /* Narrow screens: stack the phones */
+  @media (max-width: 980px) {
+    body { height: auto; }
+    .stage { flex-direction: column; align-items: center; }
+    .flow { transform: rotate(90deg); margin: 0; }
+    .phone { --pw: min(400px, calc(100vw - 32px)); flex: none; height: 80dvh; }
+    .topbar { position: static; }
+  }
+</style>
+</head>
+<body>
+<h1 class="sr-only">Abbo: demo en vivo con tres celulares</h1>
+<header class="topbar">
+  <div class="logo"><span class="mark" aria-hidden="true">A</span>Abbo <small><span class="live-dot" aria-hidden="true"></span>En vivo</small></div>
+  <div class="date-pill" id="date"></div>
+  <div class="spacer"></div>
+  <div class="ctl-group" role="group" aria-label="Simulación">
+    <button class="pill" type="button" data-act="nextDay" aria-label="Siguiente día">🌙 +1 día</button>
+    <button class="pill" type="button" data-act="nextWeek" aria-label="Siguiente semana">📅 +1 semana</button>
+    <button class="pill" type="button" data-act="replay" aria-label="Repetir la última venta (prueba de duplicado)">🔁 Repetir venta</button>
+    <button class="pill" type="button" data-act="autoFinish">⏩ Hasta terminar</button>
+    <button class="pill" type="button" data-act="reset">↺ Reiniciar</button>
+  </div>
+  <div class="ctl-group" role="group" aria-label="Ayudas de lectura">
+    <button class="pill" type="button" id="btnSize">Aa <span id="sizeLabel">Letra</span></button>
+    <button class="pill" type="button" id="btnContrast" aria-pressed="false">◐ Contraste</button>
+  </div>
+</header>
+
+<main class="stage" id="stage"></main>
+<div class="sr-only" role="status" aria-live="polite" id="announcer"></div>
+
+<script>
+'use strict';
+
+// ---------- Demo constants ----------
+const APP = 'Abbo';
+const TASA_USURA_EA = 25;          // % E.A. Valor demo: verificar la tasa de usura vigente certificada por la SFC
+const PAGO_MINIMO = 1000;          // abonos menores se guardan para la próxima venta
+const INICIO = Date.UTC(2026, 10, 2); // lunes 2 de noviembre de 2026 = día 1
+const STORE_KEY = 'abbo-envivo-v1';
+const LENDER = 'Fondo Vecinal';
+const TENDERA = 'Doña Rosa';
+const TIENDA = 'Tienda La Esquina';
+
+// Left to right follows the money: client → tendera → lender
+const ROLES = ['cliente', 'tendera', 'prestamista'];
+const PEOPLE = {
+  cliente:     { name: 'Carlos', role: 'Cliente', avatar: '🧑🏻', label: 'Cliente', caption: 'Compra en la tienda' },
+  tendera:     { name: TENDERA, role: 'Tendera · ' + TIENDA, avatar: '👩🏽‍🦱', label: 'Tendera', caption: 'Abona con cada venta' },
+  prestamista: { name: LENDER, role: 'Prestamista', avatar: '🏦', label: 'Prestamista', caption: 'Recibe los abonos' },
+};
+const CHANNELS = {
+  nequi: { label: 'Nequi', ico: '📱' },
+  daviplata: { label: 'Daviplata', ico: '📲' },
+  transfer: { label: 'Transferencia', ico: '🏦' },
+};
+const PRODUCTS = [
+  { id: 'arroz', emo: '🍚', name: 'Arroz 1 kg', price: 4500 },
+  { id: 'huevos', emo: '🥚', name: 'Huevos x30', price: 18000 },
+  { id: 'leche', emo: '🥛', name: 'Leche 1 L', price: 4000 },
+  { id: 'pan', emo: '🍞', name: 'Pan', price: 2000 },
+  { id: 'aceite', emo: '🫒', name: 'Aceite 1 L', price: 12000 },
+  { id: 'cafe', emo: '☕', name: 'Café 500 g', price: 15000 },
+];
+const QUICK_AMOUNTS = [8000, 45000, 60000, 120000];
+
+const seed = (prefs) => ({
+  step: 'borrador',            // borrador | enviada | rechazada | activo | pagado
+  tScreen: 'oferta',           // pantalla de la tendera durante la oferta: oferta | topes | billetera
+  offer: { principal: 200000, rate: 18, pct: 10, term: 6 },
+  caps: { week: 20000, month: 80000 },
+  loan: null,
+  day: 1,
+  feed: [],
+  eventIds: [],
+  lastSale: null,
+  cart: { items: {}, custom: 0, channel: 'nequi' },
+  lastPurchase: null,
+  seq: 0,
+  prefs: prefs || { size: 0, contrast: false },
+});
+
+// ---------- Storage ("base de datos" = este objeto en localStorage) ----------
+function load() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return seed();
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) {} }
+let st = load();
+
+// ---------- Formatting ----------
+const nf = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+const money = (n) => '$' + nf.format(Math.round(n));
+const pesos = (n) => `${nf.format(Math.round(n))} pesos`;
+const dateOf = (day) => new Date(INICIO + (day - 1) * 86400000);
+const dfLong = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+const dfShort = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const fechaLarga = (day) => dfLong.format(dateOf(day));
+const fechaCorta = (day) => dfShort.format(dateOf(day));
+const weekKey = (day) => Math.floor((day - 1) / 7);
+const monthKey = (day) => { const d = dateOf(day); return d.getUTCFullYear() * 12 + d.getUTCMonth(); };
+
+// ---------- Engine (pure) ----------
+function grantTotal(offer) {
+  // Permiso = préstamo + intereses máximos del plazo, redondeado hacia arriba a mil.
+  return Math.ceil(offer.principal * Math.pow(1 + offer.rate / 100, offer.term / 12) / 1000) * 1000;
+}
+const dailyRate = (rateEA) => Math.pow(1 + rateEA / 100, 1 / 365) - 1;
+
+function collectedIn(state, keyFn) {
+  const k = keyFn(state.day);
+  return state.feed.filter((e) => e.type === 'venta' && e.deduction > 0 && keyFn(e.day) === k)
+    .reduce((s, e) => s + e.deduction, 0);
+}
+
+/** deducción = min(pct de la venta + guardado, saldo, tope semana, tope mes, permiso) */
+function calcularDeduccion(amount, c) {
+  if (!(amount > 0)) return { due: 0, pending: c.pending, reason: 'invalida' };
+  if (c.balance <= 0) return { due: 0, pending: 0, reason: 'pagado' };
+  const raw = Math.floor(amount * c.pct / 100) + c.pending;
+  const limits = [['saldo', c.balance], ['semana', c.weekLeft], ['mes', c.monthLeft], ['permiso', c.grantLeft]];
+  let due = raw, limitedBy = null;
+  for (const [k, v] of limits) if (v < due) { due = v; limitedBy = k; }
+  due = Math.max(due, 0);
+  if (due === 0) return limitedBy ? { due: 0, pending: 0, reason: 'tope_' + limitedBy } : { due: 0, pending: 0, reason: 'guardado' };
+  if (due < PAGO_MINIMO && due < c.balance) return { due: 0, pending: due, reason: 'guardado' };
+  if (limitedBy === 'saldo') return { due, pending: 0, reason: 'ultimo' };
+  return { due, pending: 0, reason: limitedBy ? 'tope_' + limitedBy : 'enviado' };
+}
+
+function fakeId(kind, wallet) {
+  const hex = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+  const uuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return `https://ilp.interledger-test.dev/${wallet}/${kind}/${uuid}`;
+}
+
+// ---------- Actions (mutate state) ----------
+function addFeed(entry) { entry.id = ++st.seq; st.feed.unshift(entry); return entry; }
+
+function procesarVenta(channel, amount, eventId) {
+  if (st.eventIds.includes(eventId)) return addFeed({ type: 'repetida', day: st.day, channel, amount });
+  st.eventIds.push(eventId);
+  st.lastSale = { channel, amount, eventId };
+  const entry = { type: 'venta', day: st.day, channel, amount, eventId, deduction: 0, reason: 'sin_credito' };
+  const loan = st.loan;
+  if (loan && st.step === 'activo') {
+    const prevPending = loan.pending;
+    const r = calcularDeduccion(amount, {
+      pct: loan.pct, pending: loan.pending, balance: loan.balance,
+      weekLeft: st.caps.week - collectedIn(st, weekKey),
+      monthLeft: st.caps.month - collectedIn(st, monthKey),
+      grantLeft: loan.grantTotal - loan.collected,
+    });
+    loan.pending = r.pending;
+    Object.assign(entry, { deduction: r.due, reason: r.reason, pending: r.pending });
+    if (r.due > 0) {
+      entry.includedCarry = prevPending;
+      entry.paymentId = fakeId('outgoing-payments', 'tienda-la-esquina');
+      loan.balance -= r.due;
+      loan.collected += r.due;
+    }
+  } else if (st.step === 'pagado') {
+    entry.reason = 'pagado';
+  }
+  addFeed(entry);
+  if (loan && st.step === 'activo' && loan.balance <= 0) cerrarCredito();
+  return entry;
+}
+
+function cerrarCredito() {
+  st.step = 'pagado';
+  st.loan.balance = 0;
+  st.loan.pending = 0;
+  st.loan.closedDay = st.day;
+  addFeed({ type: 'pagado', day: st.day });
+}
+
+function avanzarUnDia() {
+  const before = st.day;
+  st.day += 1;
+  let interest = 0;
+  const loan = st.loan;
+  if (loan && st.step === 'activo') {
+    interest = Math.round(loan.balance * dailyRate(loan.rate));
+    // Nunca se puede deber más de lo que cubre el permiso.
+    interest = Math.max(0, Math.min(interest, loan.grantTotal - loan.collected - loan.balance));
+    loan.balance += interest;
+    loan.interest += interest;
+  }
+  return { interest, newWeek: weekKey(st.day) !== weekKey(before), newMonth: monthKey(st.day) !== monthKey(before) };
+}
+
+function avanzar(days, withSales) {
+  let interest = 0;
+  const channels = Object.keys(CHANNELS);
+  for (let i = 0; i < days; i++) {
+    if (withSales && st.step === 'activo') {
+      procesarVenta(channels[i % 3], 60000, `auto-${++st.seq}`);
+      if (st.step !== 'activo') break;
+    }
+    const r = avanzarUnDia();
+    interest += r.interest;
+    if (r.newMonth) addFeed({ type: 'mes', day: st.day });
+    if (r.newWeek) addFeed({ type: 'semana', day: st.day });
+  }
+  return interest;
+}
+
+// ---------- UI helpers ----------
+const $ = (s, root = document) => root.querySelector(s);
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const phoneEl = (role) => document.getElementById('phone-' + role);
+const toastTimers = {};
+
+function toast(role, msg, delay = 0) {
+  setTimeout(() => {
+    const t = $('#toast-' + role);
+    if (!t) return;
+    t.innerHTML = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimers[role]);
+    toastTimers[role] = setTimeout(() => t.classList.remove('show'), 4200);
+  }, delay);
+}
+
+function ping(role, delay = 0) {
+  setTimeout(() => {
+    const p = phoneEl(role);
+    if (!p) return;
+    p.classList.remove('ping'); void p.offsetWidth; p.classList.add('ping');
+  }, delay);
+}
+
+function announce(msg) {
+  const a = $('#announcer');
+  a.textContent = '';
+  setTimeout(() => { a.textContent = msg; }, 50);
+}
+
+// A money pill that flies from one element to another phone
+function flyCoin(fromEl, toRole, label, delay = 0) {
+  if (reduceMotion() || !fromEl) return;
+  const a = fromEl.getBoundingClientRect(); // read now: the button may be re-rendered before the timeout
+  setTimeout(() => {
+    const to = phoneEl(toRole);
+    if (!to) return;
+    const b = to.getBoundingClientRect();
+    const coin = document.createElement('div');
+    coin.className = 'coin';
+    coin.setAttribute('aria-hidden', 'true');
+    coin.textContent = label;
+    document.body.appendChild(coin);
+    const w = coin.offsetWidth, h = coin.offsetHeight;
+    const x0 = a.left + a.width / 2 - w / 2, y0 = a.top + a.height / 2 - h / 2;
+    const x1 = b.left + b.width / 2 - w / 2, y1 = b.top + b.height * 0.32 - h / 2;
+    const lift = Math.min(y0, y1) - 80;
+    coin.animate([
+      { transform: `translate(${x0}px, ${y0}px) scale(.6)`, opacity: 0 },
+      { transform: `translate(${x0}px, ${y0}px) scale(1)`, opacity: 1, offset: .12 },
+      { transform: `translate(${(x0 + x1) / 2}px, ${lift}px) scale(1.12)`, opacity: 1, offset: .55 },
+      { transform: `translate(${x1}px, ${y1}px) scale(.9)`, opacity: 1, offset: .92 },
+      { transform: `translate(${x1}px, ${y1}px) scale(.6)`, opacity: 0 },
+    ], { duration: 1100, easing: 'cubic-bezier(.45, 0, .2, 1)' }).onfinish = () => coin.remove();
+  }, delay);
+}
+
+function bar(value, max, label) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return `<div class="bar ${value >= max ? 'full' : ''}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${value}" aria-valuetext="${money(value)} de ${money(max)}"><span style="width:${pct}%"></span></div>`;
+}
+
+function ring(pct) {
+  const r = 46, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
+  return `<svg class="ring" viewBox="0 0 112 112" role="img" aria-label="Has pagado el ${pct}%">
+    <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient></defs>
+    <circle class="bg" cx="56" cy="56" r="${r}"></circle>
+    <circle class="fg" cx="56" cy="56" r="${r}" stroke="url(#ringGrad)" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle>
+    <text x="56" y="56" text-anchor="middle" font-size="24">${pct}%</text>
+    <text x="56" y="76" text-anchor="middle" font-size="11">pagado</text></svg>`;
+}
+
+const repaidPct = (loan) => loan ? Math.floor((loan.collected / (loan.collected + loan.balance || 1)) * 100) : 0;
+const facts = (items) => `<ul class="facts">${items.map(([i, t]) => `<li><span class="ico" aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>`;
+
+// Feed ids each phone has already shown, so new rows get highlighted
+const seen = { tendera: null, prestamista: null };
+function isFresh(role, e) { return seen[role] !== null && e.id > seen[role]; }
+
+// ---------- Screens ----------
+function screenKey(role) {
+  if (role === 'tendera' && st.step === 'enviada') return 'tendera:' + st.tScreen;
+  if (role === 'cliente') return 'cliente';
+  return role + ':' + st.step;
+}
+
+function offerSummary() {
+  const o = st.offer;
+  return `<p style="margin:0">${TENDERA} recibe <strong>${money(o.principal)}</strong>.</p>
+    <p style="margin:6px 0 0">Paga el <strong>${o.pct}%</strong> de cada venta digital, con interés de <strong>${o.rate}% al año</strong> solo sobre lo que debe.</p>
+    <p style="margin:6px 0 0">Lo máximo que podrás cobrar: <strong>${money(grantTotal(o))}</strong>.</p>`;
+}
+
+function viewPrestamista() {
+  if (st.step === 'borrador') {
+    const o = st.offer;
+    return `<h2 tabindex="-1">Nueva oferta</h2>
+      <p class="lead">Para ${TENDERA} · ${TIENDA}</p>
+      <fieldset><legend>¿Cuánto vas a prestar?</legend><div class="chips">
+        ${[100000, 200000, 500000].map((v) => `<button type="button" class="chip" id="pr-${v}" data-act="principal" data-v="${v}" aria-pressed="${o.principal === v}">${money(v)}</button>`).join('')}
+      </div></fieldset>
+      <div class="field">
+        <label class="label" for="rateNum">Interés al año (E.A.)</label>
+        <div class="row">
+          <input type="range" id="rate" min="5" max="${TASA_USURA_EA}" step="0.5" value="${Math.min(o.rate, TASA_USURA_EA)}" aria-label="Interés al año" aria-describedby="rateHelp">
+          <input type="number" id="rateNum" min="5" step="0.5" value="${o.rate}" inputmode="decimal" aria-describedby="rateHelp rateErr"> <span aria-hidden="true">%</span>
+        </div>
+        <p class="small" id="rateHelp" style="margin:4px 0 0">⚖️ Tope legal (usura): <strong>${TASA_USURA_EA}% E.A.</strong> No se puede pasar. <em>(valor demo)</em></p>
+        <p class="err" id="rateErr" role="alert" ${o.rate > TASA_USURA_EA ? '' : 'hidden'}>⛔ Supera la tasa de usura. Bájalo a ${TASA_USURA_EA}% o menos.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="pct">Parte de cada venta: <output id="pctOut" for="pct">${o.pct}%</output></label>
+        <input type="range" id="pct" min="5" max="20" step="1" value="${o.pct}" aria-valuetext="${o.pct} por ciento" style="width:100%">
+        <p class="small" style="margin:0">Más alto = paga más rápido, pero le queda menos de cada venta.</p>
+      </div>
+      <fieldset><legend>Plazo máximo</legend><div class="chips">
+        ${[3, 6, 12].map((v) => `<button type="button" class="chip" id="tm-${v}" data-act="term" data-v="${v}" aria-pressed="${o.term === v}">${v} meses</button>`).join('')}
+      </div></fieldset>
+      <div class="card hero" id="offerSummary">${offerSummary()}</div>
+      <button class="btn" type="button" id="sendOffer" data-act="sendOffer" ${o.rate > TASA_USURA_EA ? 'disabled' : ''}>Enviar oferta a ${TENDERA}</button>`;
+  }
+  if (st.step === 'enviada') {
+    return `<h2 tabindex="-1">Oferta enviada</h2>
+      <p style="margin:8px 0 14px"><span class="status wait">⏳ Esperando a ${TENDERA}</span></p>
+      <div class="card">${offerSummary()}</div>
+      <button class="btn ghost" type="button" data-act="cancelOffer">Cancelar oferta</button>`;
+  }
+  if (st.step === 'rechazada') {
+    return `<div class="empty"><div class="ico" aria-hidden="true">🙅🏽‍♀️</div>
+      <h2 tabindex="-1">${TENDERA} no aceptó</h2>
+      <p class="muted">No se creó ningún permiso. No se le cobra nada.</p></div>
+      <button class="btn" type="button" data-act="newOffer">Hacer otra oferta</button>`;
+  }
+  const L = st.loan;
+  const receipts = st.feed.filter((e) => e.type === 'venta' && e.deduction > 0);
+  const salesWeek = st.feed.filter((e) => e.type === 'venta' && weekKey(e.day) === weekKey(st.day)).reduce((s, e) => s + e.amount, 0);
+  const paid = st.step === 'pagado';
+  return `<h2 tabindex="-1">Mi cartera</h2>
+    <p class="lead">1 crédito activo</p>
+    <section class="card hero" aria-labelledby="loanT">
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+        <h3 id="loanT" style="margin:0">${TENDERA}</h3>
+        <span class="status">${paid ? '✓ Pagado' : '✓ Al día'}</span>
+      </div>
+      <div class="small" style="margin-bottom:8px">Recibido</div>
+      <div class="big">${money(L.collected)}</div>
+      ${bar(L.collected, L.collected + L.balance, 'Avance del pago')}
+      <p class="small" style="margin:0">${repaidPct(L)}% pagado · Falta ${money(L.balance)}</p>
+    </section>
+    <section class="card" aria-labelledby="recT">
+      <h3 id="recT" style="margin:0 0 4px">Cuentas claras</h3>
+      <dl>
+        <div class="kv"><dt>Libro de ${APP}</dt><dd>${money(L.collected)}</dd></div>
+        <div class="kv"><dt>Tu billetera</dt><dd>${money(L.collected)}</dd></div>
+      </dl>
+      <p style="margin:6px 0 0;font-weight:750;color:var(--brand-text)">✓ Coinciden al peso</p>
+    </section>
+    ${paid ? `<div class="card note"><p style="margin:0">🔒 El permiso de cobro se cerró solo. Ya no puedes cobrar de la cuenta de ${TENDERA}.</p></div>` : ''}
+    <section class="card" aria-labelledby="sigT">
+      <h3 id="sigT" style="margin:0 0 4px">Señales</h3>
+      <p style="margin:0;font-size:.92rem">Ventas digitales esta semana: <strong>${money(salesWeek)}</strong></p>
+      <p class="small" style="margin:4px 0 0">Si bajan, lo ves antes de que haya un problema.</p>
+    </section>
+    <section class="card" aria-labelledby="condT">
+      <h3 id="condT" style="margin:0 0 4px">Condiciones</h3>
+      <dl>
+        <div class="kv"><dt>Prestado</dt><dd>${money(L.principal)}</dd></div>
+        <div class="kv"><dt>Parte de cada venta</dt><dd>${L.pct}%</dd></div>
+        <div class="kv"><dt>Interés</dt><dd>${L.rate}% E.A.</dd></div>
+        <div class="kv"><dt>Intereses generados</dt><dd>${money(L.interest)}</dd></div>
+        <div class="kv"><dt>Permiso total, sin vencimiento</dt><dd>${money(L.grantTotal)}</dd></div>
+        <div class="kv"><dt>Topes que eligió ella</dt><dd>${money(st.caps.week)}/sem · ${money(st.caps.month)}/mes</dd></div>
+      </dl>
+    </section>
+    <h3>Recibos (${receipts.length})</h3>
+    ${receipts.length ? `<ul class="feed">${receipts.slice(0, 30).map((e) => `<li class="${isFresh('prestamista', e) ? 'fresh' : ''}"><span class="ico" aria-hidden="true">🧾</span><div>
+        <div class="t">+${money(e.deduction)}</div>
+        <div class="d">Venta por ${CHANNELS[e.channel].label} de ${money(e.amount)} · ${fechaCorta(e.day)}</div>
+        <div class="mono" title="${e.paymentId}">${e.paymentId}</div></div></li>`).join('')}</ul>`
+      : `<p class="muted">Aún no hay abonos. Llegan solos cuando la tienda vende.</p>`}`;
+}
+
+function viewTendera() {
+  const o = st.offer;
+  if (st.step === 'borrador') {
+    return `<div class="empty"><div class="ico" aria-hidden="true">🌱</div>
+      <h2 tabindex="-1">Todavía no tienes ofertas</h2>
+      <p class="muted">Cuando un prestamista te ofrezca un crédito, lo verás aquí.</p></div>`;
+  }
+  if (st.step === 'rechazada') {
+    return `<div class="empty"><div class="ico" aria-hidden="true">👋</div>
+      <h2 tabindex="-1">Dijiste que no</h2>
+      <p class="muted">No diste ningún permiso. Nadie puede cobrarte nada.</p></div>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'oferta') {
+    return `<h2 tabindex="-1">Tienes una oferta</h2>
+      <div class="card hero" style="margin-top:12px">
+        <p style="margin:0" class="small">${LENDER} te presta</p>
+        <div class="big">${money(o.principal)}</div>
+      </div>
+      ${facts([
+        ['🧾', `Pagas el <strong>${o.pct}%</strong> de cada venta por Nequi, Daviplata o transferencia.`],
+        ['🌧️', 'Si un día no vendes, ese día <strong>no pagas</strong>. Sin multas.'],
+        ['💵', 'Lo que vendes en efectivo <strong>no se toca</strong>.'],
+        ['📈', `Interés: ${o.rate}% al año, solo sobre lo que debes.`],
+        ['🔒', `En total nunca te pueden cobrar más de <strong>${money(grantTotal(o))}</strong>.`],
+      ])}
+      <button class="btn" type="button" data-act="toTopes" style="margin-top:18px">Seguir: elegir mis topes</button>
+      <button class="btn ghost" type="button" data-act="reject">No me interesa</button>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'topes') {
+    const c = st.caps, g = grantTotal(o);
+    const bad = c.month < c.week;
+    const weeks = Math.ceil(g / Math.min(c.week, c.month * 12 / 52));
+    return `<h2 tabindex="-1">Tú pones el límite</h2>
+      <p class="lead">Lo máximo que puede salir de tu cuenta. Tu billetera lo cuida, no nosotros.</p>
+      ${capStepper('week', 'Máximo por semana', c.week, 5000, [20000, 30000, 50000])}
+      ${capStepper('month', 'Máximo por mes', c.month, 10000, [80000, 100000, 150000])}
+      ${bad ? `<p class="err" role="alert">⛔ El tope del mes no puede ser menor que el de la semana.</p>`
+        : `<div class="card note"><p style="margin:0">💡 Con estos topes terminarías de pagar en unas <strong>${weeks} semanas</strong> como mínimo, si vendes bien.</p></div>`}
+      <button class="btn" type="button" data-act="toWallet" ${bad ? 'disabled' : ''}>Seguir: autorizar en mi billetera</button>
+      <button class="btn ghost" type="button" data-act="toOferta">Volver</button>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'billetera') {
+    return `<div class="wallet-head"><div class="wt">🔐 Tu billetera</div><div style="font-size:.82rem;opacity:.9">Solicitud de permiso</div></div>
+      <h2 tabindex="-1">${LENDER} pide permiso para cobrar de tu cuenta</h2>
+      <p class="lead">Lee los 2 permisos. Tú decides.</p>
+      <div class="perm">
+        <div class="pt"><span class="perm-num" aria-hidden="true">1</span>Cobrar hasta ${money(grantTotal(o))} en total</div>
+        <p style="margin:6px 0 0;font-size:.92rem">Es el valor del crédito con intereses. <strong>No tiene fecha de vencimiento</strong>: se cierra solo cuando termines de pagar.</p>
+      </div>
+      <div class="perm">
+        <div class="pt"><span class="perm-num" aria-hidden="true">2</span>Tus topes</div>
+        <p style="margin:6px 0 0;font-size:.92rem">Nunca más de <strong>${money(st.caps.week)} por semana</strong>.<br>Nunca más de <strong>${money(st.caps.month)} por mes</strong>.</p>
+      </div>
+      <p class="small">Cada cobro queda en tu billetera con su recibo.</p>
+      <button class="btn" type="button" data-act="authorize">✓ Autorizar</button>
+      <button class="btn ghost" type="button" data-act="reject">✕ Rechazar</button>`;
+  }
+  const L = st.loan, paid = st.step === 'pagado';
+  const wk = collectedIn(st, weekKey), mo = collectedIn(st, monthKey);
+  return `<h2 tabindex="-1">Mi crédito</h2>
+    <p class="lead">${fechaLarga(st.day)}</p>
+    ${paid ? `<div class="card hero"><p class="mid" style="margin:0">🎉 ¡Terminaste de pagar!</p>
+      <p style="margin:6px 0 0">El permiso de ${LENDER} se cerró solo. Ya no pueden cobrarte nada.</p></div>` : ''}
+    <section class="card" aria-label="Resumen del crédito">
+      <div class="ring-wrap">${ring(repaidPct(L))}
+        <div><div class="small">Te falta pagar</div><div class="big" style="font-size:1.6rem">${money(L.balance)}</div>
+        <div class="small" style="margin-top:2px">Ya pagaste ${money(L.collected)}</div>
+        <p style="margin:6px 0 0"><span class="status">${paid ? '✓ Pagado' : '✓ Al día'}</span></p></div>
+      </div>
+      ${L.pending > 0 ? `<p style="margin:12px 0 0;font-size:.92rem">💾 Guardado para la próxima venta: <strong>${money(L.pending)}</strong></p>` : ''}
+    </section>
+    ${paid ? '' : `<section class="card" aria-labelledby="capsT">
+      <h3 id="capsT" style="margin:0 0 4px">Tus topes</h3>
+      <p style="margin:8px 0 0;font-size:.92rem">Esta semana: <strong>${money(wk)}</strong> de ${money(st.caps.week)}</p>
+      ${bar(wk, st.caps.week, 'Tope de la semana')}
+      ${wk >= st.caps.week ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado: lo que vendas esta semana es todo tuyo.</p>` : ''}
+      <p style="margin:12px 0 0;font-size:.92rem">Este mes: <strong>${money(mo)}</strong> de ${money(st.caps.month)}</p>
+      ${bar(mo, st.caps.month, 'Tope del mes')}
+      ${mo >= st.caps.month ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado: lo que vendas este mes es todo tuyo.</p>` : ''}
+    </section>`}
+    <h3>Movimientos</h3>
+    ${feedList()}`;
+}
+
+function capStepper(key, label, value, step, presets) {
+  return `<fieldset><legend>${label}</legend>
+    <div class="stepper">
+      <button type="button" id="dec-${key}" data-act="cap" data-k="${key}" data-d="${-step}" aria-label="Bajar ${label.toLowerCase()} ${nf.format(step)} pesos">−</button>
+      <output id="out-${key}" aria-live="polite">${money(value)}</output>
+      <button type="button" id="inc-${key}" data-act="cap" data-k="${key}" data-d="${step}" aria-label="Subir ${label.toLowerCase()} ${nf.format(step)} pesos">+</button>
+    </div>
+    <div class="chips">${presets.map((v) => `<button type="button" class="chip" id="cp-${key}-${v}" data-act="capSet" data-k="${key}" data-v="${v}" aria-pressed="${value === v}">${money(v)}</button>`).join('')}</div>
+  </fieldset>`;
+}
+
+function feedItem(e) {
+  const ch = e.channel ? CHANNELS[e.channel] : null;
+  switch (e.type) {
+    case 'venta': {
+      const d = {
+        enviado: `✓ Abonaste <strong>${money(e.deduction)}</strong>${e.includedCarry ? ` (incluye ${money(e.includedCarry)} guardado)` : ''}.`,
+        ultimo: `✓ Último abono: <strong>${money(e.deduction)}</strong>.`,
+        guardado: `💾 ${money(e.pending)} guardado para la próxima venta. Muy poquito para enviarlo solo.`,
+        tope_semana: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope de la semana. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope de la semana. Esta venta es toda tuya.`,
+        tope_mes: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope del mes. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope del mes. Esta venta es toda tuya.`,
+        tope_permiso: `✓ Abonaste <strong>${money(e.deduction)}</strong> (lo máximo del permiso).`,
+        sin_credito: 'No tenías crédito activo. No se cobró nada.',
+        pagado: 'Ya terminaste de pagar. No se cobró nada.',
+        invalida: 'Valor no válido. No se cobró nada.',
+      }[e.reason];
+      return [ch.ico, `Venta por ${ch.label} · ${money(e.amount)}`, d];
+    }
+    case 'repetida': return ['🔁', 'Aviso repetido', `La red avisó otra vez la venta de ${money(e.amount)}. <strong>No se cobró dos veces.</strong>`];
+    case 'dia': return ['🌙', 'Nuevo día', `Si no vendes, no pagas.${e.interest ? ` Intereses del día: ${money(e.interest)}.` : ''}`];
+    case 'semana': return ['📅', 'Nueva semana', `Tu tope vuelve a ${money(st.caps.week)}.`];
+    case 'mes': return ['🗓️', 'Nuevo mes', `Tu tope del mes vuelve a ${money(st.caps.month)}.`];
+    case 'desembolso': return ['💰', 'Recibiste el préstamo', `${LENDER} te envió ${money(e.amount)}.`];
+    case 'pagado': return ['🎉', '¡Crédito pagado!', `El permiso de ${LENDER} se cerró solo.`];
+    default: return ['•', '', ''];
+  }
+}
+
+function feedList() {
+  if (!st.feed.length) return `<p class="muted">Aún no hay movimientos.</p>`;
+  return `<ul class="feed">${st.feed.slice(0, 40).map((e) => {
+    const [ico, t, d] = feedItem(e);
+    return `<li class="${isFresh('tendera', e) ? 'fresh' : ''}"><span class="ico" aria-hidden="true">${ico}</span><div><div class="t">${t}</div><div class="d">${d}</div><div class="small">${fechaCorta(e.day)}</div></div></li>`;
+  }).join('')}</ul>`;
+}
+
+function cartTotal() {
+  const c = st.cart;
+  if (c.custom > 0) return c.custom;
+  return PRODUCTS.reduce((s, p) => s + (c.items[p.id] || 0) * p.price, 0);
+}
+
+function viewCliente() {
+  const c = st.cart, total = cartTotal(), p = st.lastPurchase;
+  return `<h2 tabindex="-1">${TIENDA}</h2>
+    <p class="lead">Hola, Carlos. ¿Qué vas a llevar?</p>
+    ${p ? `<div class="card hero banner" id="lastBuy"><span class="ico" aria-hidden="true">✅</span><div>
+      <strong>Pagaste ${money(p.amount)}</strong><div class="small">Por ${CHANNELS[p.channel].label}. Llega completo a la tienda.</div></div></div>` : ''}
+    <div class="products">${PRODUCTS.map((pr) => {
+      const n = c.items[pr.id] || 0;
+      return `<button type="button" class="product" id="p-${pr.id}" data-act="add" data-id="${pr.id}" aria-label="Agregar ${pr.name}, ${nf.format(pr.price)} pesos${n ? `. Llevas ${n}` : ''}">
+        ${n ? `<span class="count" aria-hidden="true">${n}</span>` : ''}
+        <span class="emo" aria-hidden="true">${pr.emo}</span><span class="pn">${pr.name}</span><span class="pp">${money(pr.price)}</span></button>`;
+    }).join('')}</div>
+    <fieldset style="margin-top:16px"><legend>O un valor exacto</legend>
+      <div class="chips">${QUICK_AMOUNTS.map((v) => `<button type="button" class="chip" id="amt-${v}" data-act="amount" data-v="${v}" aria-pressed="${c.custom === v}">${money(v)}</button>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><label for="customAmt" class="small" style="color:var(--text);font-weight:650">Otro valor</label>
+        <input type="number" id="customAmt" min="0" step="500" inputmode="numeric" value="${c.custom && !QUICK_AMOUNTS.includes(c.custom) ? c.custom : ''}" style="width:8em"></div>
+    </fieldset>
+    <fieldset><legend>¿Cómo pagas?</legend><div class="seg">
+      ${Object.entries(CHANNELS).map(([k, ch]) => `<label><input type="radio" name="channel" value="${k}" ${c.channel === k ? 'checked' : ''}><span class="ico" aria-hidden="true">${ch.ico}</span>${ch.label}</label>`).join('')}
+    </div></fieldset>
+    <div class="paybar">
+      <div class="row"><span class="small" style="color:var(--text);font-weight:650">Total</span><span class="mid" id="totalOut">${money(total)}</span></div>
+      <button class="btn" type="button" id="payBtn" data-act="pay" ${total > 0 ? '' : 'disabled'}>Pagar ${money(total)}</button>
+    </div>`;
+}
+
+const VIEWS = { cliente: viewCliente, tendera: viewTendera, prestamista: viewPrestamista };
+
+// ---------- Read aloud (one button per phone) ----------
+function speechText(role) {
+  const L = st.loan, o = st.offer, key = screenKey(role);
+  const map = {
+    'prestamista:borrador': `Nueva oferta para ${TENDERA}. Prestas ${pesos(o.principal)}, con interés de ${o.rate} por ciento al año. Ella abona el ${o.pct} por ciento de cada venta digital. El interés no puede pasar la tasa de usura de ${TASA_USURA_EA} por ciento.`,
+    'prestamista:enviada': `Oferta enviada. Esperando la respuesta de ${TENDERA}.`,
+    'prestamista:rechazada': `${TENDERA} no aceptó la oferta.`,
+    'tendera:borrador': 'Todavía no tienes ofertas de crédito.',
+    'tendera:rechazada': 'Rechazaste la oferta. Nadie puede cobrarte nada.',
+    'tendera:oferta': `${LENDER} te presta ${pesos(o.principal)}. Pagas el ${o.pct} por ciento de cada venta digital. Si un día no vendes, no pagas. Lo que vendes en efectivo no se toca. En total nunca te pueden cobrar más de ${pesos(grantTotal(o))}.`,
+    'tendera:topes': `Elige tus topes. Ahora tienes máximo ${pesos(st.caps.week)} por semana y ${pesos(st.caps.month)} por mes.`,
+    'tendera:billetera': `Tu billetera. ${LENDER} pide permiso para cobrar hasta ${pesos(grantTotal(o))} en total, sin fecha de vencimiento, y nunca más de ${pesos(st.caps.week)} por semana ni ${pesos(st.caps.month)} por mes. Puedes autorizar o rechazar.`,
+    'cliente': `${TIENDA}. Elige productos o un valor y paga. Total: ${pesos(cartTotal())}.`,
+  };
+  if (map[key]) return map[key];
+  if (L && role === 'tendera') return st.step === 'pagado' ? 'Terminaste de pagar tu crédito. El permiso se cerró.' : `Mi crédito. Te falta pagar ${pesos(L.balance)}. Ya pagaste ${pesos(L.collected)}. Esta semana van ${pesos(collectedIn(st, weekKey))} de tu tope de ${pesos(st.caps.week)}.`;
+  if (L && role === 'prestamista') return `Mi cartera. Has recibido ${pesos(L.collected)} de ${TENDERA}. Falta ${pesos(L.balance)}. El libro y tu billetera coinciden.`;
+  return '';
+}
+function stopSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  document.querySelectorAll('.speak').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+}
+function speak(role, btn) {
+  const wasOn = btn.getAttribute('aria-pressed') === 'true';
+  stopSpeak();
+  if (wasOn) return;
+  const u = new SpeechSynthesisUtterance(speechText(role));
+  u.lang = 'es-CO';
+  const voices = speechSynthesis.getVoices();
+  const v = voices.find((x) => x.lang === 'es-CO') || voices.find((x) => x.lang.startsWith('es'));
+  if (v) u.voice = v;
+  u.rate = 0.95;
+  u.onend = u.onerror = () => btn.setAttribute('aria-pressed', 'false');
+  btn.setAttribute('aria-pressed', 'true');
+  speechSynthesis.speak(u);
+}
+
+// ---------- Render ----------
+const SIZE_LABELS = ['Letra', 'Letra +', 'Letra ++'];
+const SIZE_NAMES = ['normal', 'grande', 'muy grande'];
+const lastScreen = {};
+let originRole = null; // phone where the last click happened
+
+function buildStage() {
+  const canSpeak = 'speechSynthesis' in window;
+  $('#stage').innerHTML = ROLES.map((r, i) => {
+    const p = PEOPLE[r];
+    return `${i ? '<div class="flow" aria-hidden="true">→</div>' : ''}
+    <section class="col" aria-labelledby="label-${r}">
+      <div class="col-label"><span class="step" aria-hidden="true">${i + 1}</span><strong id="label-${r}">${p.label}</strong><div>${p.caption}</div></div>
+      <div class="phone" id="phone-${r}" data-role="${r}">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="statusbar" aria-hidden="true"><span class="clock"></span><span>📶 🔋</span></div>
+        <div class="appbar">
+          <span class="avatar" aria-hidden="true">${p.avatar}</span>
+          <div class="who"><div class="who-name">${p.name}</div><div class="who-role">${p.role}</div></div>
+          ${canSpeak ? `<button class="speak" type="button" data-speak="${r}" aria-pressed="false" aria-label="Escuchar la pantalla de ${p.name}">🔊</button>` : ''}
+        </div>
+        <div class="screen" id="screen-${r}"></div>
+        <div class="toast" id="toast-${r}" aria-hidden="true"></div>
+      </div>
+    </section>`;
+  }).join('');
+}
+
+function render() {
+  const active = document.activeElement;
+  const activeId = active && active.id;
+  const html = document.documentElement;
+  html.dataset.size = st.prefs.size;
+  if (st.prefs.contrast) html.dataset.contrast = 'high'; else delete html.dataset.contrast;
+  $('#btnContrast').setAttribute('aria-pressed', String(st.prefs.contrast));
+  $('#sizeLabel').textContent = SIZE_LABELS[st.prefs.size];
+  $('#btnSize').setAttribute('aria-label', `Tamaño de letra: ${SIZE_NAMES[st.prefs.size]}. Cambiar`);
+  $('#date').textContent = '📅 ' + fechaLarga(st.day);
+  document.querySelectorAll('.clock').forEach((c) => { c.textContent = fechaCorta(st.day); });
+
+  for (const r of ROLES) {
+    const screen = $('#screen-' + r);
+    const key = screenKey(r);
+    const changed = lastScreen[r] !== undefined && lastScreen[r] !== key;
+    screen.innerHTML = VIEWS[r]();
+    if (changed) {
+      screen.scrollTop = 0;
+      if (originRole === r) { const h = $('h2', screen); if (h) h.focus(); }
+    }
+    lastScreen[r] = key;
+  }
+  if (activeId && document.getElementById(activeId) && !document.activeElement.matches('.screen h2')) {
+    document.getElementById(activeId).focus();
+  }
+  const maxId = st.feed.length ? st.feed[0].id : 0;
+  seen.tendera = maxId; seen.prestamista = maxId;
+  save();
+}
+
+// Live updates for the offer form without re-rendering (keeps slider drag smooth)
+function updateOffer() {
+  const o = st.offer, over = o.rate > TASA_USURA_EA;
+  $('#offerSummary').innerHTML = offerSummary();
+  $('#rateErr').hidden = !over;
+  $('#rateNum').setAttribute('aria-invalid', String(over));
+  $('#sendOffer').disabled = over;
+  $('#pctOut').textContent = o.pct + '%';
+  $('#pct').setAttribute('aria-valuetext', o.pct + ' por ciento');
+  save();
+}
+
+// ---------- Events ----------
+const actions = {
+  principal(b) { st.offer.principal = +b.dataset.v; },
+  term(b) { st.offer.term = +b.dataset.v; },
+  sendOffer(b) {
+    if (st.offer.rate > TASA_USURA_EA) return false;
+    st.step = 'enviada'; st.tScreen = 'oferta';
+    flyCoin(b, 'tendera', '✉️ Oferta');
+    ping('tendera', 900);
+    toast('tendera', `✉️ ${LENDER} te hizo una oferta`, 900);
+    announce(`Oferta enviada. ${TENDERA} recibió una oferta de ${pesos(st.offer.principal)}.`);
+  },
+  cancelOffer() { st.step = 'borrador'; announce('Oferta cancelada.'); },
+  newOffer() { st.step = 'borrador'; },
+  toTopes() { st.tScreen = 'topes'; },
+  toOferta() { st.tScreen = 'oferta'; },
+  toWallet() { if (st.caps.month < st.caps.week) return false; st.tScreen = 'billetera'; },
+  cap(b) { const k = b.dataset.k; st.caps[k] = Math.max(+b.dataset.d < 0 ? 5000 : 0, st.caps[k] + +b.dataset.d); },
+  capSet(b) { st.caps[b.dataset.k] = +b.dataset.v; },
+  reject() {
+    if (!confirm('¿Seguro que no quieres el crédito?')) return false;
+    st.step = 'rechazada';
+    ping('prestamista', 200);
+    toast('prestamista', `🙅🏽‍♀️ ${TENDERA} no aceptó la oferta`, 200);
+    announce(`${TENDERA} rechazó la oferta. No se dio ningún permiso.`);
+  },
+  authorize(b) {
+    const o = st.offer;
+    st.loan = { principal: o.principal, rate: o.rate, pct: o.pct, term: o.term, grantTotal: grantTotal(o),
+      balance: o.principal, collected: 0, pending: 0, interest: 0, startDay: st.day,
+      incomingPaymentId: fakeId('incoming-payments', 'fondo-vecinal') };
+    st.step = 'activo';
+    addFeed({ type: 'desembolso', day: st.day, amount: o.principal });
+    flyCoin(phoneEl('prestamista'), 'tendera', money(o.principal), 300);
+    ping('prestamista', 100);
+    ping('tendera', 1300);
+    toast('prestamista', `✅ ${TENDERA} autorizó. Le enviaste ${money(o.principal)}`, 100);
+    toast('tendera', `💰 Recibiste ${money(o.principal)}`, 1300);
+    announce(`${TENDERA} autorizó el permiso. Recibió ${pesos(o.principal)}.`);
+  },
+  add(b) { st.cart.custom = 0; st.cart.items[b.dataset.id] = (st.cart.items[b.dataset.id] || 0) + 1; },
+  amount(b) { st.cart.items = {}; st.cart.custom = +b.dataset.v; },
+  pay(b) {
+    const amount = cartTotal();
+    if (!(amount > 0)) return false;
+    const channel = st.cart.channel;
+    const e = procesarVenta(channel, amount, `${channel}-${++st.seq}`);
+    st.lastPurchase = { amount, channel };
+    st.cart.items = {}; st.cart.custom = 0;
+    flyCoin(b, 'tendera', money(amount));
+    ping('tendera', 950);
+    const msgs = [`Carlos pagó ${pesos(amount)} por ${CHANNELS[channel].label}.`];
+    if (e.deduction > 0) {
+      flyCoin(phoneEl('tendera'), 'prestamista', '+' + money(e.deduction), 1050);
+      ping('prestamista', 2000);
+      toast('tendera', `${CHANNELS[channel].ico} Venta ${money(amount)} · abonaste ${money(e.deduction)}`, 950);
+      toast('prestamista', `🧾 Recibiste ${money(e.deduction)} de ${TENDERA}`, 2000);
+      msgs.push(`${TENDERA} abonó ${pesos(e.deduction)} automáticamente.`);
+      if (st.step === 'pagado') { toast('tendera', '🎉 ¡Terminaste de pagar!', 2600); msgs.push('El crédito quedó pagado.'); }
+    } else {
+      const why = { guardado: `💾 ${money(e.pending)} guardado para la próxima`, tope_semana: '✓ Tope de la semana: esta venta es toda tuya', tope_mes: '✓ Tope del mes: esta venta es toda tuya' }[e.reason];
+      toast('tendera', `${CHANNELS[channel].ico} Venta ${money(amount)}${why ? ' · ' + why : ''}`, 950);
+      msgs.push(why ? why.replace(/^\S+\s/, '') + '.' : 'No se cobró nada.');
+    }
+    announce(msgs.join(' '));
+  },
+  nextDay() {
+    const r = avanzarUnDia();
+    if (r.newMonth) addFeed({ type: 'mes', day: st.day });
+    if (r.newWeek) addFeed({ type: 'semana', day: st.day });
+    else addFeed({ type: 'dia', day: st.day, interest: r.interest });
+    ['tendera', 'prestamista'].forEach((x) => ping(x));
+    toast('tendera', r.newWeek ? '📅 Nueva semana: tu tope se reinicia' : '🌙 Nuevo día. Si no vendes, no pagas');
+    announce(`Nuevo día: ${fechaLarga(st.day)}.${r.newWeek ? ' Los topes de la semana se reinician.' : ''}`);
+  },
+  nextWeek() {
+    avanzar(7 - ((st.day - 1) % 7), false); // salta al próximo lunes
+    ['tendera', 'prestamista'].forEach((x) => ping(x));
+    toast('tendera', `📅 Nueva semana: tu tope vuelve a ${money(st.caps.week)}`);
+    announce(`Nueva semana: ${fechaLarga(st.day)}. El tope vuelve a ${pesos(st.caps.week)}.`);
+  },
+  replay() {
+    if (!st.lastSale) { toast('cliente', 'Primero haz una compra'); announce('Primero haz una compra como cliente.'); return; }
+    procesarVenta(st.lastSale.channel, st.lastSale.amount, st.lastSale.eventId);
+    ping('tendera'); ping('prestamista');
+    toast('tendera', '🔁 Aviso repetido: no se cobró dos veces');
+    toast('prestamista', '🔁 Aviso repetido: $0 cobrado');
+    announce('La red repitió el aviso de la última venta. No se cobró dos veces.');
+  },
+  autoFinish() {
+    if (st.step !== 'activo') { announce('Primero activa el crédito.'); toast('prestamista', 'Primero activa el crédito'); return; }
+    avanzar(400, true);
+    ['tendera', 'prestamista'].forEach((x) => ping(x));
+    toast('tendera', st.step === 'pagado' ? '🎉 ¡Terminaste de pagar!' : 'Pasó un año de ventas');
+    toast('prestamista', st.step === 'pagado' ? '✅ Crédito pagado completo' : 'Pasó un año de ventas');
+    announce(st.step === 'pagado' ? `Crédito pagado el ${fechaLarga(st.day)}.` : 'Avanzamos un año de ventas.');
+  },
+  reset() {
+    if (!confirm('¿Reiniciar la demo desde cero?')) return false;
+    stopSpeak();
+    st = seed(st.prefs);
+    for (const r of ROLES) delete lastScreen[r];
+    announce('Demo reiniciada.');
+  },
+};
+
+document.addEventListener('click', (e) => {
+  const sp = e.target.closest('[data-speak]');
+  if (sp) return speak(sp.dataset.speak, sp);
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const phone = b.closest('.phone');
+  originRole = phone ? phone.dataset.role : null;
+  const fn = actions[b.dataset.act];
+  if (fn && fn(b) !== false) render();
+});
+
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.id === 'rate') { st.offer.rate = +t.value; $('#rateNum').value = t.value; updateOffer(); }
+  else if (t.id === 'rateNum') {
+    const v = parseFloat(t.value);
+    if (!Number.isNaN(v)) { st.offer.rate = v; $('#rate').value = Math.min(v, TASA_USURA_EA); updateOffer(); }
+  }
+  else if (t.id === 'pct') { st.offer.pct = +t.value; updateOffer(); }
+  else if (t.id === 'customAmt') {
+    st.cart.items = {}; st.cart.custom = Math.max(0, Math.floor(+t.value || 0));
+    const total = cartTotal();
+    $('#totalOut').textContent = money(total);
+    $('#payBtn').textContent = 'Pagar ' + money(total);
+    $('#payBtn').disabled = !(total > 0);
+    document.querySelectorAll('[data-act="amount"]').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+    document.querySelectorAll('.product .count').forEach((c) => c.remove());
+    save();
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.name === 'channel') { st.cart.channel = e.target.value; save(); }
+});
+
+// Another tab or window with this page open stays in sync (e.g. projector + laptop)
+window.addEventListener('storage', (e) => {
+  if (e.key !== STORE_KEY || !e.newValue) return;
+  try { st = JSON.parse(e.newValue); originRole = null; render(); } catch (err) {}
+});
+
+$('#btnSize').addEventListener('click', () => { st.prefs.size = (st.prefs.size + 1) % 3; render(); });
+$('#btnContrast').addEventListener('click', () => { st.prefs.contrast = !st.prefs.contrast; render(); });
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+
+buildStage();
+render();
+</script>
+</body>
+</html>

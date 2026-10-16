@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a6b4c">
+<title>Abbo Demo</title>
+<style>
+  :root {
+    --bg: #ece6da; --surface: #ffffff; --surface-2: #f5f1e8; --text: #15201a; --muted: #46514a;
+    --line: #c9c1b0; --brand: #0a6b4c; --brand-ink: #ffffff; --brand-soft: #dcf0e5; --brand-text: #075239;
+    --accent: #f4c430; --accent-ink: #231c00; --warn-bg: #fff1c7; --warn-ink: #5c3b00;
+    --danger: #a1231a; --danger-bg: #fde6e2; --focus: #1d4ed8; --frame: #121212;
+    --wallet: #1c2a52; --wallet-ink: #ffffff; --track: #e3ddd0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d110f; --surface: #181e1a; --surface-2: #212923; --text: #eef3ef; --muted: #c0c9c2;
+      --line: #3a463e; --brand: #5ed3a1; --brand-ink: #03251a; --brand-soft: #173a2b; --brand-text: #7fe3b8;
+      --accent: #f4c430; --accent-ink: #231c00; --warn-bg: #3a2e08; --warn-ink: #ffdc7a;
+      --danger: #ff8f85; --danger-bg: #3d1613; --focus: #93b4ff; --frame: #000;
+      --wallet: #24356b; --wallet-ink: #ffffff; --track: #2c352f;
+      color-scheme: dark;
+    }
+  }
+  /* High contrast: black on white, thick borders, regardless of system theme */
+  :root[data-contrast="high"] {
+    --bg: #ffffff; --surface: #ffffff; --surface-2: #ffffff; --text: #000000; --muted: #000000;
+    --line: #000000; --brand: #00402b; --brand-ink: #ffffff; --brand-soft: #ffffff; --brand-text: #00402b;
+    --accent: #ffd400; --accent-ink: #000000; --warn-bg: #ffffff; --warn-ink: #000000;
+    --danger: #8a0000; --danger-bg: #ffffff; --focus: #0000ff; --frame: #000000;
+    --wallet: #000000; --wallet-ink: #ffffff; --track: #ffffff;
+    color-scheme: light;
+  }
+  :root[data-contrast="high"] .card, :root[data-contrast="high"] .chip, :root[data-contrast="high"] .bar,
+  :root[data-contrast="high"] .btn, :root[data-contrast="high"] .product { border-width: 2px !important; border-color: #000 !important; }
+
+  html { font-size: 112.5%; } /* 18px base */
+  html[data-size="1"] { font-size: 125%; }
+  html[data-size="2"] { font-size: 143.75%; }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .stage { display: flex; gap: 32px; justify-content: center; align-items: flex-start; padding: 20px 16px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* ---------- Phone frame ---------- */
+  .phone {
+    width: 400px; height: min(860px, calc(100dvh - 40px)); flex: none;
+    background: var(--surface-2); border: 10px solid var(--frame); border-radius: 44px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  @media (max-width: 760px) {
+    .stage { flex-direction: column; align-items: stretch; padding: 0; gap: 0; }
+    .phone { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+  }
+  .statusbar { display: flex; justify-content: space-between; padding: 8px 22px 2px; font-size: .72rem; font-weight: 600; color: var(--muted); }
+  .appbar { display: flex; align-items: center; gap: 10px; padding: 6px 14px 10px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .who { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 1.35rem; background: var(--brand-soft); flex: none; }
+  .who-name { font-weight: 700; font-size: .95rem; line-height: 1.2; }
+  .who-role { font-size: .78rem; color: var(--muted); line-height: 1.2; }
+  .tools { display: flex; gap: 4px; }
+  .tool {
+    min-width: 48px; min-height: 48px; padding: 2px 4px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface-2); color: var(--text); font: inherit; font-size: .62rem; font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; cursor: pointer; line-height: 1.1;
+  }
+  .tool .ico { font-size: 1rem; line-height: 1.1; }
+  .tool[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+
+  main { flex: 1; overflow-y: auto; padding: 18px 16px 28px; overscroll-behavior: contain; }
+  main h1 { font-size: 1.45rem; line-height: 1.2; margin: 0 0 6px; }
+  main h1:focus { outline: none; }
+  main h1:focus-visible { outline: 3px solid var(--focus); }
+  main h2 { font-size: 1.1rem; margin: 22px 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 16px; }
+
+  /* ---------- Bottom nav (role switcher) ---------- */
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); background: var(--surface); padding-bottom: env(safe-area-inset-bottom); }
+  .tab {
+    position: relative; min-height: 64px; border: 0; background: none; color: var(--muted); font: inherit;
+    font-size: .8rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 2px;
+  }
+  .tab .ico { font-size: 1.4rem; line-height: 1; }
+  .tab[aria-current="page"] { color: var(--brand-text); }
+  .tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 18%; right: 18%; height: 4px; border-radius: 0 0 4px 4px; background: var(--brand); }
+  .badge { position: absolute; top: 6px; left: calc(50% + 8px); min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--danger); color: #fff; font-size: .7rem; display: grid; place-items: center; }
+  :root[data-contrast="high"] .badge { background: #000; }
+
+  /* ---------- Building blocks ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin: 0 0 14px; }
+  .card.brand { background: var(--brand-soft); border-color: var(--brand); }
+  .card.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: currentColor; }
+  .card.danger { background: var(--danger-bg); color: var(--danger); border-color: currentColor; }
+  .big { font-size: 2.1rem; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+  .mid { font-size: 1.3rem; font-weight: 700; }
+  .small { font-size: .85rem; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 56px;
+    padding: 12px 18px; border-radius: 16px; border: 2px solid var(--brand); background: var(--brand); color: var(--brand-ink);
+    font: inherit; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-top: 10px; text-align: center;
+  }
+  .btn.secondary { background: transparent; color: var(--brand-text); }
+  .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); font-weight: 600; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    min-height: 48px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+    color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .chip[aria-pressed="true"]::before { content: "✓ "; }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+  legend, .label { font-weight: 700; margin-bottom: 8px; padding: 0; display: block; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] { flex: 1; height: 48px; accent-color: var(--brand); }
+  input[type="number"] {
+    width: 6.2em; min-height: 48px; padding: 8px 10px; font: inherit; font-weight: 700; color: var(--text);
+    background: var(--surface); border: 2px solid var(--line); border-radius: 12px;
+  }
+  input[aria-invalid="true"] { border-color: var(--danger); }
+  .field { margin-bottom: 18px; }
+  .err { color: var(--danger); font-weight: 700; margin: 6px 0 0; }
+  ul.facts { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 12px; }
+  ul.facts li { display: grid; grid-template-columns: 2rem 1fr; gap: 8px; align-items: start; }
+  ul.facts .ico { font-size: 1.3rem; line-height: 1.3; text-align: center; }
+
+  .stepper { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .stepper button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--brand); background: var(--surface); color: var(--brand-text); font-size: 1.6rem; font-weight: 700; cursor: pointer; }
+  .stepper output { text-align: center; font-size: 1.6rem; font-weight: 800; }
+
+  .bar { height: 16px; border-radius: 8px; background: var(--track); border: 1px solid var(--line); overflow: hidden; margin: 6px 0 4px; }
+  .bar > span { display: block; height: 100%; background: var(--brand); border-radius: 8px; }
+  .bar.full > span { background: var(--accent); }
+  .ring-wrap { display: flex; align-items: center; gap: 16px; }
+  .ring { width: 124px; height: 124px; flex: none; }
+  .ring circle { fill: none; stroke-width: 14; }
+  .ring .bg { stroke: var(--track); }
+  .ring .fg { stroke: var(--brand); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
+  .ring text { fill: var(--text); font-weight: 800; font-family: inherit; }
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: .85rem; background: var(--brand-soft); color: var(--brand-text); border: 1px solid var(--brand); }
+  .status.wait { background: var(--warn-bg); color: var(--warn-ink); border-color: currentColor; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  .kv:last-child { border-bottom: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 700; text-align: right; }
+  dl { margin: 0; }
+
+  ul.feed { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  ul.feed li { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; }
+  ul.feed .ico { font-size: 1.4rem; line-height: 1.2; text-align: center; }
+  ul.feed .t { font-weight: 700; }
+  ul.feed .d { font-size: .9rem; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .72rem; color: var(--muted); word-break: break-all; }
+  .empty { text-align: center; padding: 30px 10px; }
+  .empty .ico { font-size: 3rem; }
+
+  /* Client store */
+  .products { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .product {
+    position: relative; min-height: 110px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface);
+    color: var(--text); font: inherit; cursor: pointer; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center;
+  }
+  .product .emo { font-size: 2rem; line-height: 1.1; }
+  .product .pn { font-weight: 600; font-size: .9rem; line-height: 1.2; }
+  .product .pp { font-weight: 800; }
+  .product .count { position: absolute; top: 6px; right: 6px; min-width: 26px; height: 26px; border-radius: 13px; background: var(--brand); color: var(--brand-ink); font-weight: 800; font-size: .8rem; display: grid; place-items: center; padding: 0 6px; }
+  .channels { display: grid; gap: 8px; }
+  .channel { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer; font-weight: 600; }
+  .channel input { width: 22px; height: 22px; accent-color: var(--brand); margin: 0; }
+  .channel:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+  .channel:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 0 4px; }
+
+  /* Wallet consent (looks like a different app on purpose) */
+  .wallet { margin: -18px -16px 0; }
+  .wallet-head { background: var(--wallet); color: var(--wallet-ink); padding: 16px; }
+  .wallet-head .wt { font-weight: 800; font-size: 1.05rem; }
+  .wallet-body { padding: 18px 16px; }
+  .perm { border: 2px solid var(--wallet); border-radius: 16px; padding: 14px; margin-bottom: 12px; background: var(--surface); }
+  :root:not([data-contrast="high"]) .perm { border-color: color-mix(in srgb, var(--wallet) 50%, var(--line)); }
+  .perm .pt { font-weight: 800; font-size: 1.05rem; }
+  .perm-num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--wallet); color: var(--wallet-ink); font-weight: 800; font-size: .85rem; margin-right: 6px; }
+
+  .toast {
+    position: absolute; left: 12px; right: 12px; bottom: 80px; z-index: 5; padding: 14px 16px; border-radius: 16px;
+    background: var(--text); color: var(--surface); font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .toast { transition: opacity .25s, transform .25s; }
+    .bar > span, .ring .fg { transition: width .5s, stroke-dashoffset .6s; }
+  }
+
+  /* ---------- Demo panel (presenter only, outside the phone) ---------- */
+  .demo { width: 330px; flex: none; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+  @media (max-width: 760px) { .demo { width: auto; margin: 16px; } }
+  .demo h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .demo .btn { min-height: 48px; font-size: .95rem; }
+  .demo details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .demo summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+  .demo ol, .demo ul { padding-left: 1.2rem; margin: 6px 0; font-size: .9rem; }
+  .demo li { margin-bottom: 6px; }
+  .demo code { font-size: .78rem; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="statusbar" aria-hidden="true"><span id="clock">9:41</span><span>📶 🔋</span></div>
+    <header class="appbar">
+      <div class="who" id="who"></div>
+      <div class="tools" role="group" aria-label="Ayudas de lectura">
+        <button class="tool" id="btnSize" type="button"><span class="ico" aria-hidden="true">Aa</span><span id="sizeLabel">Letra</span></button>
+        <button class="tool" id="btnContrast" type="button" aria-pressed="false"><span class="ico" aria-hidden="true">◐</span>Contraste</button>
+        <button class="tool" id="btnSpeak" type="button" aria-pressed="false"><span class="ico" aria-hidden="true">🔊</span>Escuchar</button>
+      </div>
+    </header>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <main id="main" tabindex="-1"></main>
+    <nav class="tabs" aria-label="Cambiar de usuario" id="tabs"></nav>
+  </div>
+
+  <aside class="demo" aria-labelledby="demoTitle">
+    <h2 id="demoTitle">Panel de demo</h2>
+    <p class="small" style="margin:0 0 6px">Controles para quien presenta. No hacen parte de la app.</p>
+    <p style="margin:0"><strong>Hoy:</strong> <span id="demoDate"></span></p>
+    <button class="btn" type="button" data-act="nextDay">🌙 Siguiente día</button>
+    <button class="btn secondary" type="button" data-act="nextWeek">📅 Siguiente semana</button>
+    <button class="btn secondary" type="button" data-act="replay">🔁 Repetir última venta (prueba de duplicado)</button>
+    <button class="btn secondary" type="button" data-act="autoFinish">⏩ Avanzar con ventas hasta terminar</button>
+    <button class="btn ghost" type="button" data-act="reset">↺ Reiniciar demo</button>
+    <details>
+      <summary>Por dentro: Open Payments</summary>
+      <ul>
+        <li><strong>Permiso del crédito:</strong> grant interactivo <code>outgoing-payment</code> con <code>limits.debitAmount</code> = valor total del crédito y <strong>sin</strong> <code>interval</code> ni vencimiento.</li>
+        <li><strong>Topes:</strong> límites con <code>interval</code> semanal (<code>P7D</code>) y mensual (<code>P1M</code>) que la billetera hace cumplir.</li>
+        <li>Cada abono = quote + outgoing payment hacia el incoming payment del prestamista. El ID es el recibo.</li>
+        <li>Al pagar todo, el grant se revoca y el prestamista pierde acceso.</li>
+        <li>En esta demo todo es simulado y está en el navegador.</li>
+      </ul>
+    </details>
+  </aside>
+</div>
+
+<script>
+'use strict';
+
+// ---------- Demo constants ----------
+const APP = 'Abbo';
+const TASA_USURA_EA = 25;          // % E.A. Valor demo: verificar la tasa de usura vigente certificada por la SFC
+const PAGO_MINIMO = 1000;          // abonos menores se guardan para la próxima venta
+const INICIO = Date.UTC(2026, 10, 2); // lunes 2 de noviembre de 2026 = día 1
+const STORE_KEY = 'abbo-demo-v1';
+const LENDER = 'Fondo Vecinal';
+const TENDERA = 'Doña Rosa';
+const TIENDA = 'Tienda La Esquina';
+
+const PEOPLE = {
+  prestamista: { name: LENDER, role: 'Prestamista', avatar: '🏦', tab: 'Prestamista' },
+  tendera:     { name: TENDERA, role: 'Tendera', avatar: '👩🏽‍🦱', tab: 'Tendera' },
+  cliente:     { name: 'Carlos', role: 'Cliente', avatar: '🧑🏻', tab: 'Cliente' },
+};
+const TAB_ICONS = { prestamista: '🏦', tendera: '🏪', cliente: '🛒' };
+const CHANNELS = {
+  nequi: { label: 'Nequi', ico: '📱' },
+  daviplata: { label: 'Daviplata', ico: '📲' },
+  transfer: { label: 'Transferencia', ico: '🏦' },
+};
+const PRODUCTS = [
+  { id: 'arroz', emo: '🍚', name: 'Arroz 1 kg', price: 4500 },
+  { id: 'huevos', emo: '🥚', name: 'Huevos x30', price: 18000 },
+  { id: 'leche', emo: '🥛', name: 'Leche 1 L', price: 4000 },
+  { id: 'pan', emo: '🍞', name: 'Pan', price: 2000 },
+  { id: 'aceite', emo: '🫒', name: 'Aceite 1 L', price: 12000 },
+  { id: 'cafe', emo: '☕', name: 'Café 500 g', price: 15000 },
+];
+
+const seed = (prefs) => ({
+  role: 'prestamista',
+  step: 'borrador',            // borrador | enviada | rechazada | activo | pagado
+  tScreen: 'oferta',           // pantalla de la tendera durante la oferta: oferta | topes | billetera
+  offer: { principal: 200000, rate: 18, pct: 10, term: 6 },
+  caps: { week: 20000, month: 80000 },
+  loan: null,
+  day: 1,
+  feed: [],
+  eventIds: [],
+  lastSale: null,
+  cart: { items: {}, custom: 0, channel: 'nequi' },
+  lastPurchase: null,
+  badges: { prestamista: 0, tendera: 0, cliente: 0 },
+  seq: 0,
+  prefs: prefs || { size: 0, contrast: false },
+});
+
+// ---------- Storage ("base de datos" = este objeto en localStorage) ----------
+function load() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return seed();
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) {} }
+let st = load();
+
+// ---------- Formatting ----------
+const nf = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+const money = (n) => '$' + nf.format(Math.round(n));
+const dateOf = (day) => new Date(INICIO + (day - 1) * 86400000);
+const dfLong = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+const dfShort = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const fechaLarga = (day) => dfLong.format(dateOf(day));
+const fechaCorta = (day) => dfShort.format(dateOf(day));
+const weekKey = (day) => Math.floor((day - 1) / 7);
+const monthKey = (day) => { const d = dateOf(day); return d.getUTCFullYear() * 12 + d.getUTCMonth(); };
+
+// ---------- Engine (pure) ----------
+function grantTotal(offer) {
+  // Permiso = préstamo + intereses máximos del plazo, redondeado hacia arriba a mil.
+  return Math.ceil(offer.principal * Math.pow(1 + offer.rate / 100, offer.term / 12) / 1000) * 1000;
+}
+const dailyRate = (rateEA) => Math.pow(1 + rateEA / 100, 1 / 365) - 1;
+
+function collectedIn(state, keyFn) {
+  const k = keyFn(state.day);
+  return state.feed.filter((e) => e.type === 'venta' && e.deduction > 0 && keyFn(e.day) === k)
+    .reduce((s, e) => s + e.deduction, 0);
+}
+
+/** deducción = min(pct de la venta + guardado, saldo, tope semana, tope mes, permiso) */
+function calcularDeduccion(amount, c) {
+  if (!(amount > 0)) return { due: 0, pending: c.pending, reason: 'invalida' };
+  if (c.balance <= 0) return { due: 0, pending: 0, reason: 'pagado' };
+  const raw = Math.floor(amount * c.pct / 100) + c.pending;
+  const limits = [['saldo', c.balance], ['semana', c.weekLeft], ['mes', c.monthLeft], ['permiso', c.grantLeft]];
+  let due = raw, limitedBy = null;
+  for (const [k, v] of limits) if (v < due) { due = v; limitedBy = k; }
+  due = Math.max(due, 0);
+  if (due === 0) return limitedBy ? { due: 0, pending: 0, reason: 'tope_' + limitedBy } : { due: 0, pending: 0, reason: 'guardado' };
+  if (due < PAGO_MINIMO && due < c.balance) return { due: 0, pending: due, reason: 'guardado' };
+  if (limitedBy === 'saldo') return { due, pending: 0, reason: 'ultimo' };
+  return { due, pending: 0, reason: limitedBy ? 'tope_' + limitedBy : 'enviado' };
+}
+
+function fakeId(kind, wallet) {
+  const hex = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+  const uuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  return `https://ilp.interledger-test.dev/${wallet}/${kind}/${uuid}`;
+}
+
+// ---------- Actions (mutate state) ----------
+function bump(...roles) { for (const r of roles) if (r !== st.role) st.badges[r] = (st.badges[r] || 0) + 1; }
+
+function procesarVenta(channel, amount, eventId, quiet) {
+  if (st.eventIds.includes(eventId)) {
+    st.feed.unshift({ type: 'repetida', day: st.day, channel, amount });
+    bump('tendera', 'prestamista');
+    if (!quiet) toast(`Venta repetida por la red: no se cobró dos veces. $0 cobrado.`);
+    return;
+  }
+  st.eventIds.push(eventId);
+  st.lastSale = { channel, amount, eventId };
+  const entry = { type: 'venta', day: st.day, channel, amount, eventId, deduction: 0, reason: 'sin_credito' };
+  const loan = st.loan;
+  if (loan && st.step === 'activo') {
+    const prevPending = loan.pending;
+    const r = calcularDeduccion(amount, {
+      pct: loan.pct, pending: loan.pending, balance: loan.balance,
+      weekLeft: st.caps.week - collectedIn(st, weekKey),
+      monthLeft: st.caps.month - collectedIn(st, monthKey),
+      grantLeft: loan.grantTotal - loan.collected,
+    });
+    loan.pending = r.pending;
+    Object.assign(entry, { deduction: r.due, reason: r.reason, pending: r.pending });
+    if (r.due > 0) {
+      entry.includedCarry = prevPending;
+      entry.paymentId = fakeId('outgoing-payments', 'tienda-la-esquina');
+      loan.balance -= r.due;
+      loan.collected += r.due;
+    }
+  } else if (st.step === 'pagado') {
+    entry.reason = 'pagado';
+  }
+  st.feed.unshift(entry);
+  bump('tendera', 'prestamista');
+  if (loan && st.step === 'activo' && loan.balance <= 0) cerrarCredito();
+}
+
+function cerrarCredito() {
+  st.step = 'pagado';
+  st.loan.balance = 0;
+  st.loan.pending = 0;
+  st.loan.closedDay = st.day;
+  st.feed.unshift({ type: 'pagado', day: st.day });
+}
+
+function avanzarUnDia() {
+  const before = st.day;
+  st.day += 1;
+  let interest = 0;
+  const loan = st.loan;
+  if (loan && st.step === 'activo') {
+    interest = Math.round(loan.balance * dailyRate(loan.rate));
+    // Nunca se puede deber más de lo que cubre el permiso.
+    interest = Math.max(0, Math.min(interest, loan.grantTotal - loan.collected - loan.balance));
+    loan.balance += interest;
+    loan.interest += interest;
+  }
+  return { interest, newWeek: weekKey(st.day) !== weekKey(before), newMonth: monthKey(st.day) !== monthKey(before) };
+}
+
+function avanzar(days, withSales) {
+  let interest = 0;
+  const channels = Object.keys(CHANNELS);
+  for (let i = 0; i < days; i++) {
+    if (withSales && st.step === 'activo') {
+      procesarVenta(channels[i % 3], 60000, `auto-${++st.seq}`, true);
+      if (st.step !== 'activo') break;
+    }
+    const r = avanzarUnDia();
+    interest += r.interest;
+    if (r.newMonth) st.feed.unshift({ type: 'mes', day: st.day });
+    if (r.newWeek) st.feed.unshift({ type: 'semana', day: st.day });
+  }
+  return interest;
+}
+
+// ---------- UI helpers ----------
+const $ = (s) => document.querySelector(s);
+const main = $('#main');
+let lastScreen = null;
+let toastTimer = null;
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+function bar(value, max, label, id) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  const full = value >= max;
+  return `<div class="bar ${full ? 'full' : ''}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${value}" aria-valuetext="${money(value)} de ${money(max)}"${id ? ` id="${id}"` : ''}><span style="width:${pct}%"></span></div>`;
+}
+
+function ring(pct) {
+  const r = 52, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
+  return `<svg class="ring" viewBox="0 0 124 124" role="img" aria-label="Has pagado el ${pct}%">
+    <circle class="bg" cx="62" cy="62" r="${r}"></circle>
+    <circle class="fg" cx="62" cy="62" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle>
+    <text x="62" y="60" text-anchor="middle" font-size="26">${pct}%</text>
+    <text x="62" y="82" text-anchor="middle" font-size="12">pagado</text></svg>`;
+}
+
+const repaidPct = (loan) => loan ? Math.floor((loan.collected / (loan.collected + loan.balance || 1)) * 100) : 0;
+const facts = (items) => `<ul class="facts">${items.map(([i, t]) => `<li><span class="ico" aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>`;
+
+// ---------- Screens ----------
+function screenKey() {
+  if (st.role === 'tendera' && st.step === 'enviada') return 'tendera:' + st.tScreen;
+  if (st.role === 'cliente') return 'cliente:' + (st.lastPurchase ? 'ok' : 'tienda');
+  return st.role + ':' + st.step;
+}
+
+function offerSummary() {
+  const o = st.offer;
+  return `<p style="margin:0">${TENDERA} recibe <strong>${money(o.principal)}</strong>.</p>
+    <p style="margin:6px 0 0">Paga el <strong>${o.pct}%</strong> de cada venta digital, con interés de <strong>${o.rate}% al año</strong> solo sobre lo que debe.</p>
+    <p style="margin:6px 0 0">Lo máximo que podrás cobrar: <strong>${money(grantTotal(o))}</strong>.</p>`;
+}
+
+function viewPrestamista() {
+  if (st.step === 'borrador') {
+    const o = st.offer;
+    return `<h1 tabindex="-1">Nueva oferta de crédito</h1>
+      <p class="lead">Para ${TENDERA} · ${TIENDA}</p>
+      <fieldset><legend>¿Cuánto vas a prestar?</legend><div class="chips">
+        ${[100000, 200000, 500000].map((v) => `<button type="button" class="chip" id="pr-${v}" data-act="principal" data-v="${v}" aria-pressed="${o.principal === v}">${money(v)}</button>`).join('')}
+      </div></fieldset>
+      <div class="field">
+        <label class="label" for="rateNum">Interés al año (E.A.)</label>
+        <div class="row">
+          <input type="range" id="rate" min="5" max="${TASA_USURA_EA}" step="0.5" value="${Math.min(o.rate, TASA_USURA_EA)}" aria-label="Interés al año" aria-describedby="rateHelp">
+          <input type="number" id="rateNum" min="5" step="0.5" value="${o.rate}" inputmode="decimal" aria-describedby="rateHelp rateErr"> <span aria-hidden="true">%</span>
+        </div>
+        <p class="small" id="rateHelp" style="margin:4px 0 0">⚖️ Tope legal (tasa de usura): <strong>${TASA_USURA_EA}% E.A.</strong> No se puede pasar. <em>(valor demo, verificar con la SFC)</em></p>
+        <p class="err" id="rateErr" role="alert" ${o.rate > TASA_USURA_EA ? '' : 'hidden'}>⛔ Ese interés supera la tasa de usura. Bájalo a ${TASA_USURA_EA}% o menos.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="pct">Parte de cada venta que abona: <output id="pctOut" for="pct">${o.pct}%</output></label>
+        <input type="range" id="pct" min="5" max="20" step="1" value="${o.pct}" aria-valuetext="${o.pct} por ciento">
+        <p class="small" style="margin:0">Más alto = paga más rápido, pero le queda menos de cada venta.</p>
+      </div>
+      <fieldset><legend>Plazo máximo</legend><div class="chips">
+        ${[3, 6, 12].map((v) => `<button type="button" class="chip" id="tm-${v}" data-act="term" data-v="${v}" aria-pressed="${o.term === v}">${v} meses</button>`).join('')}
+      </div></fieldset>
+      <div class="card brand" id="offerSummary">${offerSummary()}</div>
+      <button class="btn" type="button" id="sendOffer" data-act="sendOffer" ${o.rate > TASA_USURA_EA ? 'disabled' : ''}>Enviar oferta a ${TENDERA}</button>`;
+  }
+  if (st.step === 'enviada') {
+    return `<h1 tabindex="-1">Oferta enviada</h1>
+      <p><span class="status wait">⏳ Esperando a ${TENDERA}</span></p>
+      <div class="card">${offerSummary()}</div>
+      <div class="card warn"><p style="margin:0">👇 Toca <strong>Tendera</strong> abajo para ver el teléfono de ${TENDERA}.</p></div>
+      <button class="btn ghost" type="button" data-act="cancelOffer">Cancelar oferta</button>`;
+  }
+  if (st.step === 'rechazada') {
+    return `<h1 tabindex="-1">${TENDERA} no aceptó</h1>
+      <div class="card"><p style="margin:0">No se creó ningún permiso. No se le cobra nada.</p></div>
+      <button class="btn" type="button" data-act="newOffer">Hacer otra oferta</button>`;
+  }
+  // activo | pagado → cartera
+  const L = st.loan;
+  const receipts = st.feed.filter((e) => e.type === 'venta' && e.deduction > 0);
+  const salesWeek = st.feed.filter((e) => e.type === 'venta' && weekKey(e.day) === weekKey(st.day)).reduce((s, e) => s + e.amount, 0);
+  const paid = st.step === 'pagado';
+  return `<h1 tabindex="-1">Mi cartera</h1>
+    <p class="lead">1 crédito · ${fechaLarga(st.day)}</p>
+    <section class="card" aria-labelledby="loanT">
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+        <h2 id="loanT" style="margin:0">${TENDERA}</h2>
+        <span class="status">${paid ? '✓ Pagado' : '✓ Al día'}</span>
+      </div>
+      <p class="small" style="margin:0 0 10px">${TIENDA}</p>
+      <div class="mid">Recibido ${money(L.collected)}</div>
+      ${bar(L.collected, L.collected + L.balance, 'Avance del pago')}
+      <p class="small" style="margin:0">${repaidPct(L)}% pagado · Falta ${money(L.balance)}</p>
+    </section>
+    <section class="card brand" aria-labelledby="recT">
+      <h2 id="recT" style="margin:0 0 6px">Cuentas claras</h2>
+      <dl>
+        <div class="kv"><dt>Libro de ${APP}</dt><dd>${money(L.collected)}</dd></div>
+        <div class="kv"><dt>Tu billetera (pago entrante)</dt><dd>${money(L.collected)}</dd></div>
+      </dl>
+      <p style="margin:8px 0 0;font-weight:700">✓ Coinciden al peso</p>
+    </section>
+    ${paid ? `<div class="card"><p style="margin:0">🔒 El permiso de cobro se cerró solo. Ya no puedes cobrar de la cuenta de ${TENDERA}.</p></div>` : ''}
+    <section class="card" aria-labelledby="condT">
+      <h2 id="condT" style="margin:0 0 6px">Condiciones</h2>
+      <dl>
+        <div class="kv"><dt>Prestado</dt><dd>${money(L.principal)}</dd></div>
+        <div class="kv"><dt>Parte de cada venta</dt><dd>${L.pct}%</dd></div>
+        <div class="kv"><dt>Interés</dt><dd>${L.rate}% E.A.</dd></div>
+        <div class="kv"><dt>Intereses generados</dt><dd>${money(L.interest)}</dd></div>
+        <div class="kv"><dt>Permiso total (sin vencimiento)</dt><dd>${money(L.grantTotal)}</dd></div>
+        <div class="kv"><dt>Tope por semana <span class="small">(lo eligió ella)</span></dt><dd>${money(st.caps.week)}</dd></div>
+        <div class="kv"><dt>Tope por mes <span class="small">(lo eligió ella)</span></dt><dd>${money(st.caps.month)}</dd></div>
+      </dl>
+    </section>
+    <section class="card" aria-labelledby="sigT">
+      <h2 id="sigT" style="margin:0 0 6px">Señales</h2>
+      <p style="margin:0">Ventas digitales de la tienda esta semana: <strong>${money(salesWeek)}</strong></p>
+      <p class="small" style="margin:4px 0 0">Si las ventas bajan, lo ves antes de que haya un problema.</p>
+    </section>
+    <h2>Recibos (${receipts.length})</h2>
+    ${receipts.length ? `<ul class="feed">${receipts.slice(0, 30).map((e) => `<li><span class="ico" aria-hidden="true">🧾</span><div>
+        <div class="t">+${money(e.deduction)}</div>
+        <div class="d">Venta por ${CHANNELS[e.channel].label} de ${money(e.amount)} · ${fechaCorta(e.day)}</div>
+        <div class="mono" title="${e.paymentId}">${e.paymentId}</div></div></li>`).join('')}</ul>`
+      : `<p class="muted">Aún no hay abonos. Llegan solos cuando la tienda vende.</p>`}`;
+}
+
+function viewTendera() {
+  const o = st.offer;
+  if (st.step === 'borrador') {
+    return `<div class="empty"><div class="ico" aria-hidden="true">🌱</div>
+      <h1 tabindex="-1">Todavía no tienes ofertas</h1>
+      <p class="muted">Cuando un prestamista te ofrezca un crédito, lo verás aquí.</p></div>`;
+  }
+  if (st.step === 'rechazada') {
+    return `<div class="empty"><div class="ico" aria-hidden="true">👋</div>
+      <h1 tabindex="-1">Dijiste que no</h1>
+      <p class="muted">No diste ningún permiso. Nadie puede cobrarte nada.</p></div>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'oferta') {
+    return `<h1 tabindex="-1">Tienes una oferta</h1>
+      <div class="card brand">
+        <p style="margin:0">${LENDER} te presta</p>
+        <div class="big">${money(o.principal)}</div>
+      </div>
+      ${facts([
+        ['🧾', `Pagas el <strong>${o.pct}%</strong> de cada venta por Nequi, Daviplata o transferencia.`],
+        ['🌧️', 'Si un día no vendes, ese día <strong>no pagas</strong>. Sin multas.'],
+        ['💵', 'Lo que vendes en efectivo <strong>no se toca</strong>.'],
+        ['📈', `Interés: ${o.rate}% al año, solo sobre lo que debes.`],
+        ['🔒', `En total nunca te pueden cobrar más de <strong>${money(grantTotal(o))}</strong>.`],
+      ])}
+      <button class="btn" type="button" data-act="toTopes">Seguir: elegir mis topes</button>
+      <button class="btn ghost" type="button" data-act="reject">No me interesa</button>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'topes') {
+    const c = st.caps, g = grantTotal(o);
+    const bad = c.month < c.week;
+    const perWeek = Math.min(c.week, c.month * 12 / 52);
+    const weeks = Math.ceil(g / perWeek);
+    return `<h1 tabindex="-1">Tú pones el límite</h1>
+      <p class="lead">Elige lo máximo que puede salir de tu cuenta. Tu billetera lo cuida, no nosotros.</p>
+      ${capStepper('week', 'Máximo por semana', c.week, 5000, [20000, 30000, 50000])}
+      ${capStepper('month', 'Máximo por mes', c.month, 10000, [80000, 100000, 150000])}
+      ${bad ? `<p class="err" role="alert">⛔ El tope del mes no puede ser menor que el de la semana.</p>`
+        : `<div class="card"><p style="margin:0">💡 Con estos topes terminarías de pagar en unas <strong>${weeks} semanas</strong> como mínimo, si vendes bien.</p></div>`}
+      <button class="btn" type="button" data-act="toWallet" ${bad ? 'disabled' : ''}>Seguir: autorizar en mi billetera</button>
+      <button class="btn ghost" type="button" data-act="toOferta">Volver</button>`;
+  }
+  if (st.step === 'enviada' && st.tScreen === 'billetera') {
+    return `<div class="wallet">
+      <div class="wallet-head"><div class="wt">🔐 Tu billetera</div><div style="font-size:.85rem">Solicitud de permiso</div></div>
+      <div class="wallet-body">
+        <h1 tabindex="-1">${LENDER} pide permiso para cobrar de tu cuenta</h1>
+        <p class="lead">Lee los 2 permisos. Tú decides.</p>
+        <div class="perm">
+          <div class="pt"><span class="perm-num" aria-hidden="true">1</span>Cobrar hasta ${money(grantTotal(o))} en total</div>
+          <p style="margin:6px 0 0">Es el valor del crédito con intereses. <strong>No tiene fecha de vencimiento</strong>: se cierra solo cuando termines de pagar.</p>
+        </div>
+        <div class="perm">
+          <div class="pt"><span class="perm-num" aria-hidden="true">2</span>Tus topes</div>
+          <p style="margin:6px 0 0">Nunca más de <strong>${money(st.caps.week)} por semana</strong>.<br>Nunca más de <strong>${money(st.caps.month)} por mes</strong>.</p>
+        </div>
+        <p class="small">Cada cobro queda registrado en tu billetera con su recibo.</p>
+        <button class="btn" type="button" data-act="authorize">✓ Autorizar</button>
+        <button class="btn ghost" type="button" data-act="reject">✕ Rechazar</button>
+      </div></div>`;
+  }
+  // activo | pagado → mi crédito
+  const L = st.loan, paid = st.step === 'pagado';
+  const wk = collectedIn(st, weekKey), mo = collectedIn(st, monthKey);
+  return `<h1 tabindex="-1">Mi crédito</h1>
+    <p class="lead">${fechaLarga(st.day)}</p>
+    ${paid ? `<div class="card brand"><p class="mid" style="margin:0">🎉 ¡Terminaste de pagar!</p>
+      <p style="margin:6px 0 0">El permiso de ${LENDER} se cerró solo. Ya no pueden cobrarte nada.</p></div>` : ''}
+    <section class="card" aria-label="Resumen del crédito">
+      <div class="ring-wrap">${ring(repaidPct(L))}
+        <div><div class="small">Te falta pagar</div><div class="big" style="font-size:1.7rem">${money(L.balance)}</div>
+        <div class="small" style="margin-top:4px">Ya pagaste ${money(L.collected)}</div>
+        <p style="margin:6px 0 0"><span class="status">${paid ? '✓ Pagado' : '✓ Al día'}</span></p></div>
+      </div>
+      ${L.pending > 0 ? `<p style="margin:12px 0 0">💾 Guardado para la próxima venta: <strong>${money(L.pending)}</strong></p>` : ''}
+    </section>
+    ${paid ? '' : `<section class="card" aria-labelledby="capsT">
+      <h2 id="capsT" style="margin:0 0 4px">Tus topes</h2>
+      <p style="margin:8px 0 0">Esta semana: <strong>${money(wk)}</strong> de ${money(st.caps.week)}</p>
+      ${bar(wk, st.caps.week, 'Tope de la semana')}
+      ${wk >= st.caps.week ? `<p style="margin:0;font-weight:700">✓ Tope alcanzado: lo que vendas esta semana es todo tuyo.</p>` : ''}
+      <p style="margin:12px 0 0">Este mes: <strong>${money(mo)}</strong> de ${money(st.caps.month)}</p>
+      ${bar(mo, st.caps.month, 'Tope del mes')}
+      ${mo >= st.caps.month ? `<p style="margin:0;font-weight:700">✓ Tope alcanzado: lo que vendas este mes es todo tuyo.</p>` : ''}
+    </section>`}
+    <h2>Movimientos</h2>
+    ${feedList()}`;
+}
+
+function capStepper(key, label, value, step, presets) {
+  return `<fieldset><legend>${label}</legend>
+    <div class="stepper">
+      <button type="button" id="dec-${key}" data-act="cap" data-k="${key}" data-d="${-step}" aria-label="Bajar ${label.toLowerCase()} ${nf.format(step)} pesos">−</button>
+      <output id="out-${key}" aria-live="polite">${money(value)}</output>
+      <button type="button" id="inc-${key}" data-act="cap" data-k="${key}" data-d="${step}" aria-label="Subir ${label.toLowerCase()} ${nf.format(step)} pesos">+</button>
+    </div>
+    <div class="chips">${presets.map((v) => `<button type="button" class="chip" id="cp-${key}-${v}" data-act="capSet" data-k="${key}" data-v="${v}" aria-pressed="${value === v}">${money(v)}</button>`).join('')}</div>
+  </fieldset>`;
+}
+
+function feedItem(e) {
+  const ch = e.channel ? CHANNELS[e.channel] : null;
+  switch (e.type) {
+    case 'venta': {
+      const head = `Venta por ${ch.label} · ${money(e.amount)}`;
+      const d = {
+        enviado: `✓ Abonaste <strong>${money(e.deduction)}</strong>${e.includedCarry ? ` (incluye ${money(e.includedCarry)} guardado)` : ''}.`,
+        ultimo: `✓ Último abono: <strong>${money(e.deduction)}</strong>.`,
+        guardado: `💾 ${money(e.pending)} guardado para la próxima venta. Muy poquito para enviarlo solo.`,
+        tope_semana: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope de la semana. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope de la semana. Esta venta es toda tuya.`,
+        tope_mes: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope del mes. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope del mes. Esta venta es toda tuya.`,
+        tope_permiso: `✓ Abonaste <strong>${money(e.deduction)}</strong> (lo máximo del permiso).`,
+        sin_credito: 'No tenías crédito activo. No se cobró nada.',
+        pagado: 'Ya terminaste de pagar. No se cobró nada.',
+        invalida: 'Valor no válido. No se cobró nada.',
+      }[e.reason];
+      return ['💰', head, d];
+    }
+    case 'repetida': return ['🔁', 'Aviso repetido', `La red avisó otra vez la venta de ${money(e.amount)}. <strong>No se cobró dos veces.</strong>`];
+    case 'dia': return ['🌙', 'Nuevo día', `Si no vendes, no pagas.${e.interest ? ` Intereses del día: ${money(e.interest)}.` : ''}`];
+    case 'semana': return ['📅', 'Nueva semana', `Tu tope vuelve a ${money(st.caps.week)}.`];
+    case 'mes': return ['🗓️', 'Nuevo mes', `Tu tope del mes vuelve a ${money(st.caps.month)}.`];
+    case 'desembolso': return ['🏦', 'Recibiste el préstamo', `${LENDER} te envió ${money(e.amount)}.`];
+    case 'pagado': return ['🎉', '¡Crédito pagado!', `El permiso de ${LENDER} se cerró solo.`];
+    default: return ['•', '', ''];
+  }
+}
+
+function feedList() {
+  if (!st.feed.length) return `<p class="muted">Aún no hay movimientos.</p>`;
+  return `<ul class="feed">${st.feed.slice(0, 40).map((e) => {
+    const [ico, t, d] = feedItem(e);
+    return `<li><span class="ico" aria-hidden="true">${ico}</span><div><div class="t">${t}</div><div class="d">${d}</div><div class="small">${fechaCorta(e.day)}</div></div></li>`;
+  }).join('')}</ul>`;
+}
+
+function cartTotal() {
+  const c = st.cart;
+  if (c.custom > 0) return c.custom;
+  return PRODUCTS.reduce((s, p) => s + (c.items[p.id] || 0) * p.price, 0);
+}
+
+function viewCliente() {
+  if (st.lastPurchase) {
+    const p = st.lastPurchase;
+    return `<div class="empty"><div class="ico" aria-hidden="true">✅</div>
+      <h1 tabindex="-1">Pago enviado</h1>
+      <p class="mid" style="margin:8px 0">${money(p.amount)}</p>
+      <p>Le pagaste a ${TIENDA} por ${CHANNELS[p.channel].label}.</p>
+      <p class="muted">Tu pago llega completo a la tienda.</p></div>
+      <button class="btn" type="button" data-act="newPurchase">Hacer otra compra</button>`;
+  }
+  const c = st.cart, total = cartTotal();
+  return `<h1 tabindex="-1">${TIENDA}</h1>
+    <p class="lead">Hola, Carlos. ¿Qué vas a llevar?</p>
+    <div class="products">${PRODUCTS.map((p) => {
+      const n = c.items[p.id] || 0;
+      return `<button type="button" class="product" id="p-${p.id}" data-act="add" data-id="${p.id}" aria-label="Agregar ${p.name}, ${nf.format(p.price)} pesos${n ? `. Llevas ${n}` : ''}">
+        ${n ? `<span class="count" aria-hidden="true">${n}</span>` : ''}
+        <span class="emo" aria-hidden="true">${p.emo}</span><span class="pn">${p.name}</span><span class="pp">${money(p.price)}</span></button>`;
+    }).join('')}</div>
+    <fieldset style="margin-top:18px"><legend>O paga un valor exacto</legend>
+      <div class="chips">${[8000, 45000, 60000, 120000].map((v) => `<button type="button" class="chip" id="amt-${v}" data-act="amount" data-v="${v}" aria-pressed="${c.custom === v}">${money(v)}</button>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><label for="customAmt">Otro valor</label>
+        <input type="number" id="customAmt" min="0" step="500" inputmode="numeric" value="${c.custom && ![8000, 45000, 60000, 120000].includes(c.custom) ? c.custom : ''}" style="width:9em"></div>
+    </fieldset>
+    <fieldset><legend>¿Cómo pagas?</legend><div class="channels">
+      ${Object.entries(CHANNELS).map(([k, ch]) => `<label class="channel"><input type="radio" name="channel" value="${k}" ${c.channel === k ? 'checked' : ''}><span aria-hidden="true">${ch.ico}</span>${ch.label}</label>`).join('')}
+    </div></fieldset>
+    <div class="total"><span>Total</span><span class="big" id="totalOut">${money(total)}</span></div>
+    <button class="btn" type="button" id="payBtn" data-act="pay" ${total > 0 ? '' : 'disabled'}>Pagar ${money(total)}</button>
+    ${total > 0 ? `<button class="btn ghost" type="button" data-act="clearCart">Vaciar</button>` : ''}`;
+}
+
+// ---------- Read aloud ----------
+function speechText() {
+  const L = st.loan, o = st.offer;
+  const key = screenKey();
+  const p = (n) => `${nf.format(Math.round(n))} pesos`;
+  const map = {
+    'prestamista:borrador': `Nueva oferta para ${TENDERA}. Prestas ${p(o.principal)}, con interés de ${o.rate} por ciento al año. Ella abona el ${o.pct} por ciento de cada venta digital. El interés no puede pasar la tasa de usura de ${TASA_USURA_EA} por ciento.`,
+    'prestamista:enviada': `Oferta enviada. Esperando la respuesta de ${TENDERA}.`,
+    'prestamista:rechazada': `${TENDERA} no aceptó la oferta.`,
+    'tendera:borrador': 'Todavía no tienes ofertas de crédito.',
+    'tendera:rechazada': 'Rechazaste la oferta. Nadie puede cobrarte nada.',
+    'tendera:oferta': `${LENDER} te presta ${p(o.principal)}. Pagas el ${o.pct} por ciento de cada venta digital. Si un día no vendes, no pagas. Lo que vendes en efectivo no se toca. En total nunca te pueden cobrar más de ${p(grantTotal(o))}.`,
+    'tendera:topes': `Elige tus topes. Ahora tienes máximo ${p(st.caps.week)} por semana y ${p(st.caps.month)} por mes.`,
+    'tendera:billetera': `Tu billetera. ${LENDER} pide permiso para cobrar hasta ${p(grantTotal(o))} en total, sin fecha de vencimiento, y nunca más de ${p(st.caps.week)} por semana ni ${p(st.caps.month)} por mes. Puedes autorizar o rechazar.`,
+    'cliente:tienda': `${TIENDA}. Elige productos o un valor y paga. Total: ${p(cartTotal())}.`,
+    'cliente:ok': st.lastPurchase ? `Pago enviado: ${p(st.lastPurchase.amount)} a ${TIENDA}.` : '',
+  };
+  if (map[key]) return map[key];
+  if (L && st.role === 'tendera') return st.step === 'pagado' ? 'Terminaste de pagar tu crédito. El permiso se cerró.' : `Mi crédito. Te falta pagar ${p(L.balance)}. Ya pagaste ${p(L.collected)}. Esta semana van ${p(collectedIn(st, weekKey))} de tu tope de ${p(st.caps.week)}.`;
+  if (L && st.role === 'prestamista') return `Mi cartera. Has recibido ${p(L.collected)} de ${TENDERA}. Falta ${p(L.balance)}. El libro y tu billetera coinciden.`;
+  return '';
+}
+function stopSpeak() {
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  $('#btnSpeak').setAttribute('aria-pressed', 'false');
+}
+function speak() {
+  if (!('speechSynthesis' in window)) return;
+  if (speechSynthesis.speaking) return stopSpeak();
+  const u = new SpeechSynthesisUtterance(speechText());
+  u.lang = 'es-CO';
+  const v = speechSynthesis.getVoices().find((x) => x.lang === 'es-CO') || speechSynthesis.getVoices().find((x) => x.lang.startsWith('es'));
+  if (v) u.voice = v;
+  u.rate = 0.95;
+  u.onend = u.onerror = () => $('#btnSpeak').setAttribute('aria-pressed', 'false');
+  $('#btnSpeak').setAttribute('aria-pressed', 'true');
+  speechSynthesis.speak(u);
+}
+
+// ---------- Render ----------
+const SIZE_LABELS = ['Letra', 'Letra +', 'Letra ++'];
+const SIZE_NAMES = ['normal', 'grande', 'muy grande'];
+
+function render() {
+  const activeId = document.activeElement && document.activeElement.id;
+  const html = document.documentElement;
+  html.dataset.size = st.prefs.size;
+  if (st.prefs.contrast) html.dataset.contrast = 'high'; else delete html.dataset.contrast;
+  $('#btnContrast').setAttribute('aria-pressed', String(st.prefs.contrast));
+  $('#sizeLabel').textContent = SIZE_LABELS[st.prefs.size];
+  $('#btnSize').setAttribute('aria-label', `Tamaño de letra: ${SIZE_NAMES[st.prefs.size]}. Cambiar`);
+
+  const who = PEOPLE[st.role];
+  $('#who').innerHTML = `<span class="avatar" aria-hidden="true">${who.avatar}</span><div style="min-width:0"><div class="who-name">${who.name}</div><div class="who-role">${who.role}</div></div>`;
+  $('#tabs').innerHTML = Object.keys(PEOPLE).map((r) => {
+    const n = st.badges[r] || 0;
+    return `<button type="button" class="tab" id="tab-${r}" data-act="role" data-v="${r}" ${st.role === r ? 'aria-current="page"' : ''} aria-label="${PEOPLE[r].tab}${n ? `, ${n} novedades` : ''}">
+      <span class="ico" aria-hidden="true">${TAB_ICONS[r]}</span>${PEOPLE[r].tab}${n ? `<span class="badge" aria-hidden="true">${n > 9 ? '9+' : n}</span>` : ''}</button>`;
+  }).join('');
+
+  main.innerHTML = st.role === 'prestamista' ? viewPrestamista() : st.role === 'tendera' ? viewTendera() : viewCliente();
+  $('#demoDate').textContent = fechaLarga(st.day);
+  $('#clock').textContent = fechaCorta(st.day);
+
+  const key = screenKey();
+  if (lastScreen !== null && key !== lastScreen) {
+    main.scrollTop = 0;
+    const h = main.querySelector('h1');
+    if (h) h.focus();
+  } else if (activeId && document.getElementById(activeId)) {
+    document.getElementById(activeId).focus();
+  }
+  lastScreen = key;
+  save();
+}
+
+// Live updates for the offer form without re-rendering (keeps slider drag smooth)
+function updateOffer() {
+  const o = st.offer, over = o.rate > TASA_USURA_EA;
+  $('#offerSummary').innerHTML = offerSummary();
+  $('#rateErr').hidden = !over;
+  $('#rateNum').setAttribute('aria-invalid', String(over));
+  $('#sendOffer').disabled = over;
+  $('#pctOut').textContent = o.pct + '%';
+  $('#pct').setAttribute('aria-valuetext', o.pct + ' por ciento');
+  save();
+}
+
+// ---------- Events ----------
+const actions = {
+  role(b) { stopSpeak(); st.role = b.dataset.v; st.badges[st.role] = 0; },
+  principal(b) { st.offer.principal = +b.dataset.v; },
+  term(b) { st.offer.term = +b.dataset.v; },
+  sendOffer() {
+    if (st.offer.rate > TASA_USURA_EA) return;
+    st.step = 'enviada'; st.tScreen = 'oferta'; bump('tendera');
+    toast(`Oferta enviada a ${TENDERA}.`);
+  },
+  cancelOffer() { st.step = 'borrador'; },
+  newOffer() { st.step = 'borrador'; },
+  toTopes() { st.tScreen = 'topes'; },
+  toOferta() { st.tScreen = 'oferta'; },
+  toWallet() { if (st.caps.month >= st.caps.week) st.tScreen = 'billetera'; },
+  cap(b) { const k = b.dataset.k; st.caps[k] = Math.max(+b.dataset.d < 0 ? 5000 : 0, st.caps[k] + +b.dataset.d); },
+  capSet(b) { st.caps[b.dataset.k] = +b.dataset.v; },
+  reject() {
+    if (!confirm('¿Seguro que no quieres el crédito?')) return false;
+    st.step = 'rechazada'; bump('prestamista');
+    toast('Rechazaste la oferta. No diste ningún permiso.');
+  },
+  authorize() {
+    const o = st.offer;
+    st.loan = { principal: o.principal, rate: o.rate, pct: o.pct, term: o.term, grantTotal: grantTotal(o),
+      balance: o.principal, collected: 0, pending: 0, interest: 0, startDay: st.day,
+      incomingPaymentId: fakeId('incoming-payments', 'fondo-vecinal') };
+    st.step = 'activo';
+    st.feed.unshift({ type: 'desembolso', day: st.day, amount: o.principal });
+    bump('prestamista');
+    toast(`Listo. Recibiste ${money(o.principal)} en tu billetera.`);
+  },
+  add(b) { st.cart.custom = 0; st.cart.items[b.dataset.id] = (st.cart.items[b.dataset.id] || 0) + 1; },
+  amount(b) { st.cart.items = {}; st.cart.custom = +b.dataset.v; },
+  clearCart() { st.cart.items = {}; st.cart.custom = 0; },
+  pay() {
+    const amount = cartTotal();
+    if (!(amount > 0)) return false;
+    const channel = st.cart.channel;
+    procesarVenta(channel, amount, `${channel}-${++st.seq}`);
+    st.lastPurchase = { amount, channel };
+    st.cart.items = {}; st.cart.custom = 0;
+    const last = st.feed[0];
+    if (last.deduction > 0) toast(`La tienda recibió ${money(amount)}. Abono automático: ${money(last.deduction)}.`);
+    else toast(`La tienda recibió ${money(amount)}.`);
+  },
+  newPurchase() { st.lastPurchase = null; },
+  nextDay() {
+    const r = avanzarUnDia();
+    if (r.newMonth) st.feed.unshift({ type: 'mes', day: st.day });
+    if (r.newWeek) st.feed.unshift({ type: 'semana', day: st.day });
+    else st.feed.unshift({ type: 'dia', day: st.day, interest: r.interest });
+    toast(`Nuevo día: ${fechaLarga(st.day)}.${r.newWeek ? ' Los topes de la semana se reinician.' : ''}`);
+  },
+  nextWeek() {
+    const daysLeft = 7 - ((st.day - 1) % 7); // salta al próximo lunes
+    const interest = avanzar(daysLeft, false);
+    toast(`Nueva semana: ${fechaLarga(st.day)}. Tu tope vuelve a ${money(st.caps.week)}.${interest ? ` Intereses: ${money(interest)}.` : ''}`);
+  },
+  replay() {
+    if (!st.lastSale) { toast('Primero haz una compra como Cliente.'); return; }
+    procesarVenta(st.lastSale.channel, st.lastSale.amount, st.lastSale.eventId);
+  },
+  autoFinish() {
+    if (st.step !== 'activo') { toast('Primero activa el crédito (Prestamista → Tendera).'); return; }
+    avanzar(400, true);
+    toast(st.step === 'pagado' ? `Crédito pagado el ${fechaLarga(st.day)}.` : 'Avanzamos un año de ventas.');
+  },
+  reset() {
+    if (!confirm('¿Reiniciar la demo desde cero?')) return false;
+    stopSpeak();
+    st = seed(st.prefs);
+    lastScreen = null;
+    toast('Demo reiniciada.');
+  },
+};
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const fn = actions[b.dataset.act];
+  if (fn && fn(b) !== false) render();
+});
+
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.id === 'rate') { st.offer.rate = +t.value; $('#rateNum').value = t.value; updateOffer(); }
+  else if (t.id === 'rateNum') {
+    const v = parseFloat(t.value);
+    if (!Number.isNaN(v)) { st.offer.rate = v; $('#rate').value = Math.min(v, TASA_USURA_EA); updateOffer(); }
+  }
+  else if (t.id === 'pct') { st.offer.pct = +t.value; updateOffer(); }
+  else if (t.id === 'customAmt') {
+    st.cart.items = {}; st.cart.custom = Math.max(0, Math.floor(+t.value || 0));
+    const total = cartTotal();
+    $('#totalOut').textContent = money(total);
+    $('#payBtn').textContent = 'Pagar ' + money(total);
+    $('#payBtn').disabled = !(total > 0);
+    document.querySelectorAll('[data-act="amount"]').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+    document.querySelectorAll('.product .count').forEach((c) => c.remove());
+    save();
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.name === 'channel') { st.cart.channel = e.target.value; save(); }
+  if (e.target.id === 'customAmt') render(); // muestra/oculta "Vaciar"
+});
+
+$('#btnSize').addEventListener('click', () => { st.prefs.size = (st.prefs.size + 1) % 3; render(); });
+$('#btnContrast').addEventListener('click', () => { st.prefs.contrast = !st.prefs.contrast; render(); });
+if ('speechSynthesis' in window) {
+  $('#btnSpeak').addEventListener('click', speak);
+  speechSynthesis.getVoices();
+} else {
+  $('#btnSpeak').hidden = true;
+}
+
+render();
+</script>
+</body>
+</html>
