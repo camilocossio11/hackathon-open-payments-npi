@@ -3,221 +3,195 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06120E">
 <title>Abbo · Prestador</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="abbo.css">
+<script src="abbo.js"></script>
 <style>
-  :root {
-    --font-brand: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
-    --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --bg: #EAF2EE;
-    --blob-1: rgba(16,185,129,.22); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.16);
-    --glass: rgba(251,253,252,.72); --glass-2: #FBFDFC; --glass-3: #FFFFFF; --glass-border: #D3E2DA;
-    --text: #0B1F16; --body: #24382F; --muted: #3C5047; --brand-text: #046C4E;
-    --btn-bg: linear-gradient(135deg, #34D399, #2DD4BF); --btn-ink: #03271C;
-    --track: rgba(11,31,22,.08); --fill: linear-gradient(90deg, #10B981, #14B8A6);
-    --ok: #047857; --warn-ink: #6B4300; --warn-bg: #FFF4DC; --danger: #A61B1B; --danger-bg: #FDE8E8;
-    --focus: #1D4ED8; --glow: rgba(16,185,129,.40); --shadow: 0 24px 60px rgba(10,40,28,.12);
-    --log-bg: #0B1F16; --log-ink: #CFE6DA; --log-dim: #7FA393;
-    --blur: blur(24px) saturate(150%);
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #06120E;
-      --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
-      --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
-      --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
-      --track: rgba(255,255,255,.10);
-      --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
-      --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
-      --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #06120E;
-    --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
-    --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
-    --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
-    --track: rgba(255,255,255,.10);
-    --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
-    --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
-    --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
-    color-scheme: dark;
-  }
-  *, *::before, *::after { box-sizing: border-box; }
-  body {
-    margin: 0; min-height: 100dvh; color: var(--text); background-color: var(--bg);
-    background-image:
-      radial-gradient(40vw 40vw at 10% 12%, var(--blob-1), transparent 70%),
-      radial-gradient(36vw 36vw at 90% 15%, var(--blob-2), transparent 70%),
-      radial-gradient(42vw 42vw at 55% 108%, var(--blob-3), transparent 70%);
-    background-attachment: fixed;
-    font: 16px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased;
-  }
-  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
-  .num, .kv dd, .big, .log td { font-variant-numeric: tabular-nums; }
-
-  .topbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 20px; background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid var(--glass-border); }
-  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; }
-  .logo .mark { width: 34px; height: 34px; border-radius: 12px; background: var(--btn-bg); display: grid; place-items: center; color: var(--btn-ink); font-size: 1.05rem; box-shadow: 0 6px 20px var(--glow); }
-  .role { font-weight: 700; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2); }
-  .spacer { flex: 1; }
-  .wallet { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); overflow-wrap: anywhere; }
-
-  main { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
-  .card { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: 22px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
-  .card.full { grid-column: 1 / -1; }
-  h1 { font-size: 1.35rem; line-height: 1.2; letter-spacing: -.015em; margin: 0 0 4px; text-wrap: balance; }
-  h2 { font-size: 1rem; margin: 0 0 10px; }
-  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
-
-  .field { display: grid; gap: 6px; margin-bottom: 14px; }
-  .field label { font-weight: 650; font-size: .9rem; }
-  .field .hint { color: var(--muted); font-size: .8rem; }
-  .input-wrap { display: flex; align-items: center; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--glass-3); padding: 0 12px; }
-  .input-wrap:focus-within { outline: 3px solid var(--focus); outline-offset: 1px; }
-  .input-wrap span { color: var(--muted); font-weight: 600; }
-  .input-wrap input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 1.05rem; font-weight: 650; padding: 12px 8px; outline: none; }
-
-  .total { border-radius: 18px; padding: 14px 16px; margin: 6px 0 16px; background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); }
-  .total .label { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); }
-  .big { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
-  .total .detail { color: var(--body); font-size: .85rem; }
-
-  .btn { width: 100%; min-height: 50px; border: 0; border-radius: 999px; background: var(--btn-bg); color: var(--btn-ink); font: inherit; font-weight: 750; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px var(--glow); }
-  .btn.ghost { background: var(--glass-2); color: var(--text); border: 1px solid var(--glass-border); box-shadow: none; font-weight: 650; }
-  .btn.small { width: auto; min-height: 38px; padding: 0 14px; font-size: .85rem; }
-  .btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .row .btn { flex: 1; }
-
-  .notice { border-radius: 14px; padding: 12px 14px; font-size: .9rem; margin: 0 0 14px; }
-  .notice.info { background: var(--warn-bg); color: var(--warn-ink); }
-  .notice.error { background: var(--danger-bg); color: var(--danger); }
-  .notice.ok { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); color: var(--ok); }
-
-  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-  .steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 8px 0; }
-  .steps .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; border: 2px solid var(--glass-border); color: var(--muted); background: var(--glass-3); }
-  .steps li.done .dot { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
-  .steps li.current .dot { border-color: #10B981; color: var(--brand-text); }
-  .steps li.failed .dot { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
-  .steps .t { font-weight: 700; }
-  .steps .d { color: var(--muted); font-size: .85rem; }
-  .steps li.failed .t { color: var(--danger); }
-
-  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: .92rem; }
-  .kv:last-child { border-bottom: 0; }
-  .kv dt { color: var(--muted); }
-  .kv dd { margin: 0; font-weight: 750; text-align: right; }
-  dl { margin: 0; }
-  .bar { height: 12px; border-radius: 999px; background: var(--track); border: 1px solid var(--glass-border); overflow: hidden; margin: 8px 0 4px; }
-  .bar > span { display: block; height: 100%; background: var(--fill); border-radius: 999px; transition: width .6s ease; }
-  .collections { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
-  .collections li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--glass-3); border: 1px solid var(--glass-border); font-size: .88rem; }
-  .collections .amt { font-weight: 750; color: var(--ok); }
-  .empty { color: var(--muted); font-size: .88rem; }
-  .poll { font-size: .8rem; color: var(--muted); margin-top: 10px; }
-
-  .log-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .log-head h2 { margin: 0; }
-  .log-wrap { overflow-x: auto; border-radius: 14px; background: var(--log-bg); max-height: 320px; overflow-y: auto; }
-  table.log { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: .74rem; color: var(--log-ink); }
-  .log td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; }
-  .log td.time { color: var(--log-dim); white-space: nowrap; }
-  .log td.ep { white-space: nowrap; }
-  .log td.code.ok { color: #6EE7B7; }
-  .log td.code.bad { color: #FCA5A5; }
-  .log td.sum { word-break: break-all; min-width: 260px; }
-  [hidden] { display: none !important; }
-  @media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+  .status-card { position: sticky; top: 84px; }
+  .status-empty { text-align: center; padding: 18px 8px 8px; color: var(--muted); }
+  .status-empty svg { width: 120px; height: 120px; margin: 0 auto 8px; display: block; }
+  .status-empty svg circle { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+  .status-empty svg .arc { stroke: url(#ringGrad); stroke-width: 6; stroke-linecap: round; transform-origin: 60px 60px; animation: spin 6s linear infinite; }
+  .status-empty b { display: block; color: var(--text); font-size: 1.05rem; }
+  .needed { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--ok-line); font-size: .84rem; color: var(--body); }
+  .needed svg { width: 18px; height: 18px; flex: none; color: var(--brand); margin-top: 2px; }
+  .example-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .example-head .hint b { color: var(--text); }
+  @media (max-width: 940px) { .status-card { position: relative; top: 0; } }
 </style>
 </head>
 <body>
+<svg class="deco" viewBox="0 0 620 620" aria-hidden="true">
+  <defs>
+    <linearGradient id="decoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6EE7B7"/><stop offset="1" stop-color="#2DD4BF"/></linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6EE7B7"/><stop offset="1" stop-color="#14B8A6"/></linearGradient>
+  </defs>
+  <circle cx="310" cy="310" r="300"/><circle cx="310" cy="310" r="220"/><circle cx="310" cy="310" r="140"/>
+  <circle class="arc" cx="310" cy="310" r="220" stroke-dasharray="360 1100"/>
+</svg>
+
 <header class="topbar">
   <div class="logo"><span class="mark" aria-hidden="true">A</span>Abbo</div>
-  <span class="role">Prestador</span>
-  <span class="wallet" id="walletLabel"></span>
+  <span class="role"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v9M19 10v9M9 10v9M15 10v9M3 21h18"/></svg>Prestador</span>
+  <span class="wallet" id="walletLabel" title="Billetera del prestador"></span>
   <span class="spacer"></span>
-  <button class="btn ghost small" id="resetBtn" type="button">Nuevo préstamo</button>
+  <button class="icon-btn" id="themeBtn" type="button"></button>
+  <button class="btn ghost small" id="resetBtn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nuevo préstamo
+  </button>
 </header>
 
-<main>
-  <section class="card" aria-labelledby="formTitle">
-    <h1 id="formTitle">Condiciones del préstamo</h1>
-    <p class="sub">Define el préstamo. El deudor lo verá en su pantalla para aprobarlo o rechazarlo.</p>
-    <div class="notice error" id="fileWarning" hidden>Abre esta página desde el servidor (por ejemplo <code>http://localhost:8000/demo/prestador.html</code>). Abierta como archivo no puede llamar a la API.</div>
+<div class="page">
+  <div class="hero-head">
+    <p class="eyebrow">Panel del prestador</p>
+    <h1>Crédito que se mueve con <span class="accent">cada venta.</span></h1>
+    <p>Define la oferta y mira cómo cada venta digital de la tienda paga una parte, sola y por Interledger.</p>
+  </div>
 
-    <form id="termsForm" novalidate>
-      <div class="field">
-        <label for="borrowerName">Billetera del deudor</label>
-        <div class="input-wrap"><span>ilp.interledger-test.dev/</span><input id="borrowerName" name="borrowerName" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="mi-tienda" required></div>
-      </div>
-      <div class="field">
-        <label for="principal">Monto a prestar</label>
-        <div class="input-wrap"><span>$</span><input id="principal" name="principal" type="number" inputmode="decimal" min="1" step="1" value="1000000" required><span>COP</span></div>
-      </div>
-      <div class="field">
-        <label for="rate">Tasa de interés</label>
-        <div class="input-wrap"><input id="rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="5" required><span>%</span></div>
-        <span class="hint">Se suma una sola vez al monto prestado.</span>
-      </div>
-      <div class="field">
-        <label for="salePct">Porcentaje de cada venta cobrado</label>
-        <div class="input-wrap"><input id="salePct" name="salePct" type="number" inputmode="numeric" min="1" max="100" step="1" value="10" required><span>%</span></div>
-        <span class="hint">De cada venta que reciba el deudor, este porcentaje paga el préstamo.</span>
-      </div>
-      <div class="field">
-        <label for="termDays">Plazo</label>
-        <div class="input-wrap"><input id="termDays" name="termDays" type="number" inputmode="numeric" min="1" max="365" step="1" value="30" required><span>días</span></div>
-      </div>
+  <main class="grid">
+    <section class="card" aria-labelledby="formTitle">
+      <div class="card-head"><h1 id="formTitle">Condiciones del préstamo</h1></div>
+      <p class="sub">El deudor las verá en su pantalla para aprobarlas o rechazarlas.</p>
+      <div class="notice error" id="fileWarning" hidden>Abre esta página desde el servidor (por ejemplo <code>http://localhost:8000/demo/prestador.html</code>). Abierta como archivo no puede llamar a la API.</div>
 
-      <div class="total" aria-live="polite">
-        <div class="label">Total a pagar</div>
-        <div class="big" id="totalOut">—</div>
-        <div class="detail" id="totalDetail"></div>
+      <form id="termsForm" novalidate>
+        <h2><span class="badge-num">1</span>¿A quién le prestas?</h2>
+        <div class="field">
+          <label for="borrowerName">Billetera del deudor</label>
+          <div class="input-wrap"><span class="pre">ilp.interledger-test.dev/</span><input id="borrowerName" name="borrowerName" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="mi-tienda" required></div>
+        </div>
+
+        <h2><span class="badge-num">2</span>¿Cuánto?</h2>
+        <div class="field">
+          <label for="principal">Monto a prestar</label>
+          <div class="input-wrap xl"><span>$</span><input id="principal" name="principal" type="number" inputmode="decimal" min="1" step="1" value="1000000" required><span>COP</span></div>
+          <div class="chips" role="group" aria-label="Montos rápidos">
+            <button type="button" class="chip" data-amount="200000">$200.000</button>
+            <button type="button" class="chip" data-amount="500000">$500.000</button>
+            <button type="button" class="chip" data-amount="1000000">$1.000.000</button>
+            <button type="button" class="chip" data-amount="2000000">$2.000.000</button>
+          </div>
+        </div>
+
+        <h2><span class="badge-num">3</span>Condiciones</h2>
+        <div class="field">
+          <div class="field-head">
+            <label for="rate">Tasa de interés</label>
+            <span class="val"><input id="rate" name="rate" type="number" inputmode="decimal" min="0" max="25" step="0.1" value="5" required aria-describedby="rateHint"><span>%</span></span>
+          </div>
+          <input class="slider" id="rateRange" type="range" min="0" max="25" step="0.5" value="5" aria-label="Tasa de interés" aria-describedby="rateHint">
+          <div class="ticks" aria-hidden="true"><span>0 %</span><span>12,5 %</span><span>25 % · tope</span></div>
+          <p class="hint" id="rateHint">Se suma una sola vez al monto prestado. Máximo 25 % (tasa de usura).</p>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="salePct">Porcentaje de cada venta</label>
+            <span class="val"><input id="salePct" name="salePct" type="number" inputmode="numeric" min="1" max="100" step="1" value="10" required aria-describedby="saleHint"><span>%</span></span>
+          </div>
+          <input class="slider" id="salePctRange" type="range" min="1" max="30" step="1" value="10" aria-label="Porcentaje de cada venta" aria-describedby="saleHint">
+          <div class="ticks" aria-hidden="true"><span>1 %</span><span>15 %</span><span>30 %</span></div>
+          <p class="hint" id="saleHint">Más alto: paga más rápido, pero le queda menos de cada venta.</p>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="termDays">Plazo</label>
+            <span class="val"><input id="termDays" name="termDays" type="number" inputmode="numeric" min="1" max="365" step="1" value="30" required><span>días</span></span>
+          </div>
+          <input class="slider" id="termRange" type="range" min="1" max="365" step="1" value="30" aria-label="Plazo en días">
+          <div class="ticks" aria-hidden="true"><span>1 día</span><span>6 meses</span><span>1 año</span></div>
+        </div>
+
+        <h2><span class="badge-num">4</span>Así cobra Abbo</h2>
+        <div class="field">
+          <div class="example-head">
+            <label for="exSale">Prueba con una venta</label>
+            <p class="hint">Venta de <b id="exSaleLabel">$45.000</b></p>
+          </div>
+          <input class="slider" id="exSale" type="range" min="5000" max="200000" step="5000" value="45000" aria-describedby="exRule">
+          <div class="rule" id="exRule" aria-live="polite">
+            <div class="tile"><small>Ella vende</small><b id="exSaleOut">—</b></div>
+            <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <div class="tile"><small>Porcentaje pactado</small><b id="exPctOut">—</b></div>
+            <span class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <div class="tile accent"><small>Va al prestador</small><b id="exCutOut">—</b></div>
+          </div>
+        </div>
+
+        <div class="hero-box" aria-live="polite">
+          <div class="label">Total a pagar</div>
+          <div class="big" id="totalOut">—</div>
+          <div class="split" aria-hidden="true"><span class="cap" id="splitCap" style="width:100%"></span><span class="int" id="splitInt" style="width:0%"></span></div>
+          <div class="legend"><span><i class="c"></i>Capital</span><span><i class="n"></i>Interés</span></div>
+          <div class="detail" id="totalDetail"></div>
+          <div class="needed" id="neededBox" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+            <span id="neededText"></span>
+          </div>
+        </div>
+        <div class="notice error" id="formError" hidden></div>
+        <button class="btn" id="sendBtn" type="submit">Enviar al deudor</button>
+      </form>
+    </section>
+
+    <section class="card status-card" aria-labelledby="statusTitle">
+      <div class="card-head">
+        <h1 id="statusTitle">Estado del préstamo</h1>
+        <span class="spacer"></span>
+        <span class="pill idle" id="loanPill">Sin préstamo</span>
       </div>
-      <div class="notice error" id="formError" hidden></div>
-      <button class="btn" id="sendBtn" type="submit">Enviar al deudor</button>
-    </form>
-  </section>
+      <p class="sub" id="loanIdLabel">Aún no has enviado condiciones.</p>
+      <div class="status-empty" id="statusEmpty">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="38"/><circle class="arc" cx="60" cy="60" r="54" stroke-dasharray="70 400"/></svg>
+        <b>Todo listo para tu primera oferta</b>
+        Completa las condiciones y envíalas. Aquí verás cada paso en vivo.
+      </div>
+      <div class="notice" id="statusNotice" hidden></div>
+      <ol class="steps" id="steps"></ol>
+      <div id="retryBox" hidden>
+        <button class="btn" id="disburseBtn" type="button">Autorizar desembolso</button>
+      </div>
+      <div id="balanceBox" hidden>
+        <h2>Cartera</h2>
+        <div class="ring-wrap">
+          <svg class="ring" id="paidRing" viewBox="0 0 124 124" role="img" aria-label="Pagado 0 %">
+            <circle class="bg" cx="62" cy="62" r="50"/>
+            <circle class="fg" cx="62" cy="62" r="50" stroke-dasharray="314.2" stroke-dashoffset="314.2"/>
+            <text class="rv" x="62" y="66" text-anchor="middle" font-size="24">0%</text>
+            <text class="rl" x="62" y="84" text-anchor="middle" font-size="11">pagado</text>
+          </svg>
+          <div>
+            <div class="eyebrow">Saldo pendiente</div>
+            <div class="big num" id="balanceOut">—</div>
+            <div class="sub" id="paidLabel" style="margin:4px 0 0"></div>
+          </div>
+        </div>
+        <div class="bar" role="progressbar" aria-label="Porcentaje pagado" aria-valuemin="0" aria-valuemax="100" id="paidBar"><span id="paidFill" style="width:0%"></span></div>
+        <h2>Cobros recibidos</h2>
+        <ul class="collections" id="collections"></ul>
+        <div class="poll" id="pollLabel" aria-live="polite"></div>
+      </div>
+    </section>
 
-  <section class="card" aria-labelledby="statusTitle">
-    <h1 id="statusTitle">Estado del préstamo</h1>
-    <p class="sub" id="loanIdLabel">Aún no has enviado condiciones.</p>
-    <div class="notice" id="statusNotice" hidden></div>
-    <ol class="steps" id="steps"></ol>
-    <div id="retryBox" hidden>
-      <button class="btn" id="disburseBtn" type="button">Autorizar desembolso</button>
-    </div>
-    <div id="balanceBox" hidden>
-      <h2>Saldo pendiente</h2>
-      <div class="big num" id="balanceOut">—</div>
-      <div class="bar" role="progressbar" aria-label="Porcentaje pagado" aria-valuemin="0" aria-valuemax="100" id="paidBar"><span id="paidFill" style="width:0%"></span></div>
-      <div class="sub" id="paidLabel"></div>
-      <h2>Cobros recibidos</h2>
-      <ul class="collections" id="collections"></ul>
-      <div class="poll" id="pollLabel" aria-live="polite"></div>
-    </div>
-  </section>
-
-  <section class="card full" aria-labelledby="logTitle">
-    <div class="log-head">
-      <h2 id="logTitle">Registro de llamadas a la API</h2>
-      <span class="spacer"></span>
-      <button class="btn ghost small" id="clearLog" type="button">Limpiar registro</button>
-    </div>
-    <div class="log-wrap">
-      <table class="log">
-        <tbody id="logBody"><tr><td class="empty">Sin llamadas todavía.</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-</main>
+    <details class="card full logcard" id="logCard">
+      <summary>
+        <h2 id="logTitle">Registro de llamadas a la API</h2>
+        <span class="count" id="logCount">0</span>
+        <span class="spacer"></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="log-tools"><button class="btn ghost small" id="clearLog" type="button">Limpiar registro</button></div>
+      <div class="log-wrap">
+        <table class="log" aria-labelledby="logTitle">
+          <tbody id="logBody"><tr><td class="empty">Sin llamadas todavía.</td></tr></tbody>
+        </table>
+      </div>
+    </details>
+  </main>
+</div>
 
 <script>
 // ---------- Configuración ----------
@@ -305,7 +279,7 @@ function readTerms() {
   const totalMinor = Math.round(principalMinor * (1 + ratePct / 100));
   let error = '';
   if (!(principal > 0)) error = 'Escribe un monto mayor que cero.';
-  else if (!(ratePct >= 0 && ratePct <= 100)) error = 'La tasa debe estar entre 0 % y 100 %.';
+  else if (!(ratePct >= 0 && ratePct <= 25)) error = 'La tasa debe estar entre 0 % y 25 % (tasa de usura).';
   else if (!(Number.isInteger(salePct) && salePct >= 1 && salePct <= 100)) error = 'El porcentaje por venta debe ser un número entero entre 1 y 100.';
   else if (!(Number.isInteger(termDays) && termDays >= 1 && termDays <= 365)) error = 'El plazo debe ser un número entero de días entre 1 y 365.';
   // Aparte: el total se puede mostrar aunque falte la billetera
@@ -317,6 +291,41 @@ function renderTotal() {
   $('#totalOut').textContent = t.error ? '—' : money(t.totalMinor);
   $('#totalDetail').textContent = t.error ? '' :
     `${money(t.principalMinor)} de capital + ${money(t.totalMinor - t.principalMinor)} de interés (${t.ratePct} %). Se cobra el ${t.salePct} % de cada venta durante ${t.termDays} días.`;
+  renderPreview(t);
+}
+
+// ---------- Vista previa (solo presentación) ----------
+function renderPreview(t) {
+  for (const c of document.querySelectorAll('[data-amount]')) c.setAttribute('aria-pressed', String(Number(c.dataset.amount) === t.principal));
+  const capPct = !t.error && t.totalMinor ? (t.principalMinor / t.totalMinor) * 100 : 100;
+  $('#splitCap').style.width = capPct + '%';
+  $('#splitInt').style.width = (100 - capPct) + '%';
+  renderExample();
+  $('#neededBox').hidden = !!t.error;
+  if (t.error) return;
+  const neededMinor = Math.ceil(t.totalMinor * 100 / t.salePct);
+  $('#neededText').textContent = `Para terminar de pagar, la tienda debe vender en digital ${money(neededMinor)} en total: unos ${money(Math.ceil(neededMinor / t.termDays))} al día durante ${t.termDays} ${t.termDays === 1 ? 'día' : 'días'}.`;
+}
+function renderExample() {
+  const sale = Number($('#exSale').value);
+  const pct = Number($('#salePct').value) || 0;
+  $('#exSaleLabel').textContent = money(sale * 10 ** ASSET_SCALE);
+  $('#exSaleOut').textContent = money(sale * 10 ** ASSET_SCALE);
+  $('#exPctOut').textContent = pct + ' %';
+  $('#exCutOut').textContent = money(Math.floor(sale * pct / 100) * 10 ** ASSET_SCALE);
+  AbboUI.fill($('#exSale'));
+}
+const PILL = {
+  enviado: ['wait', 'Esperando al deudor'], rechazado: ['bad', 'Rechazado'],
+  esperando_permiso: ['wait', 'Deudor autorizando'], permiso_rechazado: ['bad', 'Permiso rechazado'],
+  permiso_aprobado: ['wait', 'Listo para desembolsar'], desembolsando: ['wait', 'Desembolsando'],
+  desembolso_rechazado: ['bad', 'Desembolso pendiente'], desembolsado: ['live', 'Cobrando ventas'], pagado: ['', 'Pagado'],
+};
+function renderPill(s) {
+  const [tone, text] = s ? PILL[s.status] || ['idle', '—'] : ['idle', 'Sin préstamo'];
+  $('#loanPill').className = 'pill ' + tone;
+  $('#loanPill').textContent = text;
+  $('#statusEmpty').hidden = !!s;
 }
 
 // ---------- Flujo ----------
@@ -432,6 +441,8 @@ function render() {
   $('#sendBtn').disabled = !!busy;
   $('#sendBtn').textContent = busy ? 'Préstamo en curso' : 'Enviar al deudor';
   for (const id of ['borrowerName', 'principal', 'rate', 'salePct', 'termDays']) $('#' + id).disabled = !!busy;
+  for (const el of document.querySelectorAll('#termsForm .slider:not(#exSale), #termsForm .chip')) el.disabled = !!busy;
+  renderPill(s);
 
   const notice = $('#statusNotice');
   notice.hidden = true;
@@ -477,6 +488,7 @@ function render() {
     $('#balanceOut').textContent = money(balance);
     $('#paidFill').style.width = paidPct + '%';
     $('#paidBar').setAttribute('aria-valuenow', String(paidPct));
+    AbboUI.ring($('#paidRing'), paidPct);
     $('#paidLabel').textContent = `Pagado ${money(debt - balance)} de ${money(debt)} (${paidPct} %).`;
     if (s.status === 'pagado') $('#pollLabel').textContent = 'Préstamo pagado. Se detuvo la revisión de ventas.';
     const list = $('#collections');
@@ -495,6 +507,7 @@ function render() {
 function renderLog() {
   const body = $('#logBody');
   const log = readLog();
+  $('#logCount').textContent = log.length;
   body.innerHTML = '';
   if (!log.length) { body.innerHTML = '<tr><td class="empty">Sin llamadas todavía.</td></tr>'; return; }
   for (const e of log) {
@@ -513,6 +526,21 @@ function renderLog() {
 $('#walletLabel').textContent = LENDER_WALLET;
 $('#fileWarning').hidden = location.protocol.startsWith('http');
 for (const id of ['principal', 'rate', 'salePct', 'termDays']) $('#' + id).addEventListener('input', renderTotal);
+
+// Controles visuales: deslizadores, montos rápidos, venta de ejemplo, tema y registro plegable
+AbboUI.themeToggle($('#themeBtn'));
+AbboUI.link($('#rateRange'), $('#rate'));
+AbboUI.link($('#salePctRange'), $('#salePct'));
+AbboUI.link($('#termRange'), $('#termDays'));
+for (const chip of document.querySelectorAll('[data-amount]')) {
+  chip.addEventListener('click', () => {
+    $('#principal').value = chip.dataset.amount;
+    $('#principal').dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+$('#exSale').addEventListener('input', renderExample);
+try { $('#logCard').open = localStorage.getItem('abbo:logOpen') === '1'; } catch (e) {}
+$('#logCard').addEventListener('toggle', () => { try { localStorage.setItem('abbo:logOpen', $('#logCard').open ? '1' : '0'); } catch (e) {} });
 
 $('#termsForm').addEventListener('submit', async (ev) => {
   ev.preventDefault();
