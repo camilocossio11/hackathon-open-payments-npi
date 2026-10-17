@@ -29,3 +29,10 @@ class CreateLoanRequest(BaseModel):
     weekly_cap_value: str | None = None
     term_minutes: int  # 5 for testing, 10080 = 1 week, 43200 = 30 days.
     period_minutes: int = 10080  # how often the cap resets: 10080 = weekly, 5 for testing
+    principal_value: str | None = None  # what the lender disburses; defaults to amount_value
+    repayment_rate_percent: int = 10  # share of each sale that repays the loan
+    lender_return_url: str | None = None  # UI page the lender's wallet approval returns to
+
+
+class AcceptLoanRequest(BaseModel):
+    borrower_return_url: str | None = None  # UI page the borrower's wallet approval returns to

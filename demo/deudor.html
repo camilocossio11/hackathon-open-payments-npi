@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abbo · Deudor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --font-brand: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+    --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg: #EAF2EE;
+    --blob-1: rgba(16,185,129,.22); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.16);
+    --glass: rgba(251,253,252,.72); --glass-2: #FBFDFC; --glass-3: #FFFFFF; --glass-border: #D3E2DA;
+    --text: #0B1F16; --body: #24382F; --muted: #3C5047; --brand-text: #046C4E;
+    --btn-bg: linear-gradient(135deg, #34D399, #2DD4BF); --btn-ink: #03271C;
+    --track: rgba(11,31,22,.08); --fill: linear-gradient(90deg, #10B981, #14B8A6);
+    --ok: #047857; --warn-ink: #6B4300; --warn-bg: #FFF4DC; --danger: #A61B1B; --danger-bg: #FDE8E8;
+    --focus: #1D4ED8; --glow: rgba(16,185,129,.40); --shadow: 0 24px 60px rgba(10,40,28,.12);
+    --log-bg: #0B1F16; --log-ink: #CFE6DA; --log-dim: #7FA393;
+    --blur: blur(24px) saturate(150%);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #06120E;
+      --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
+      --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
+      --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
+      --track: rgba(255,255,255,.10);
+      --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
+      --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
+      --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #06120E;
+    --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
+    --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
+    --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
+    --track: rgba(255,255,255,.10);
+    --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
+    --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
+    --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100dvh; color: var(--text); background-color: var(--bg);
+    background-image:
+      radial-gradient(40vw 40vw at 10% 12%, var(--blob-1), transparent 70%),
+      radial-gradient(36vw 36vw at 90% 15%, var(--blob-2), transparent 70%),
+      radial-gradient(42vw 42vw at 55% 108%, var(--blob-3), transparent 70%);
+    background-attachment: fixed;
+    font: 16px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .num, .kv dd, .big, .log td { font-variant-numeric: tabular-nums; }
+
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 20px; background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid var(--glass-border); }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 12px; background: var(--btn-bg); display: grid; place-items: center; color: var(--btn-ink); font-size: 1.05rem; box-shadow: 0 6px 20px var(--glow); }
+  .role { font-weight: 700; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2); }
+  .spacer { flex: 1; }
+  .wallet { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); overflow-wrap: anywhere; }
+
+  main { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+  .card { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: 22px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+  .card.full { grid-column: 1 / -1; }
+  h1 { font-size: 1.35rem; line-height: 1.2; letter-spacing: -.015em; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 1rem; margin: 0 0 10px; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+
+  .field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .field label { font-weight: 650; font-size: .9rem; }
+  .field .hint { color: var(--muted); font-size: .8rem; }
+  .input-wrap { display: flex; align-items: center; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--glass-3); padding: 0 12px; }
+  .input-wrap:focus-within { outline: 3px solid var(--focus); outline-offset: 1px; }
+  .input-wrap span { color: var(--muted); font-weight: 600; }
+  .input-wrap input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 1.05rem; font-weight: 650; padding: 12px 8px; outline: none; }
+
+  .total { border-radius: 18px; padding: 14px 16px; margin: 6px 0 16px; background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); }
+  .total .label { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); }
+  .big { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+  .total .detail { color: var(--body); font-size: .85rem; }
+
+  .btn { width: 100%; min-height: 50px; border: 0; border-radius: 999px; background: var(--btn-bg); color: var(--btn-ink); font: inherit; font-weight: 750; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px var(--glow); }
+  .btn.ghost { background: var(--glass-2); color: var(--text); border: 1px solid var(--glass-border); box-shadow: none; font-weight: 650; }
+  .btn.small { width: auto; min-height: 38px; padding: 0 14px; font-size: .85rem; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row .btn { flex: 1; }
+
+  .notice { border-radius: 14px; padding: 12px 14px; font-size: .9rem; margin: 0 0 14px; }
+  .notice.info { background: var(--warn-bg); color: var(--warn-ink); }
+  .notice.error { background: var(--danger-bg); color: var(--danger); }
+  .notice.ok { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); color: var(--ok); }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 8px 0; }
+  .steps .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; border: 2px solid var(--glass-border); color: var(--muted); background: var(--glass-3); }
+  .steps li.done .dot { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
+  .steps li.current .dot { border-color: #10B981; color: var(--brand-text); }
+  .steps li.failed .dot { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  .steps .t { font-weight: 700; }
+  .steps .d { color: var(--muted); font-size: .85rem; }
+  .steps li.failed .t { color: var(--danger); }
+
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: .92rem; }
+  .kv:last-child { border-bottom: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 750; text-align: right; }
+  dl { margin: 0; }
+  .bar { height: 12px; border-radius: 999px; background: var(--track); border: 1px solid var(--glass-border); overflow: hidden; margin: 8px 0 4px; }
+  .bar > span { display: block; height: 100%; background: var(--fill); border-radius: 999px; transition: width .6s ease; }
+  .collections { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+  .collections li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--glass-3); border: 1px solid var(--glass-border); font-size: .88rem; }
+  .collections .amt { font-weight: 750; color: var(--ok); }
+  .empty { color: var(--muted); font-size: .88rem; }
+  .poll { font-size: .8rem; color: var(--muted); margin-top: 10px; }
+
+  .log-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .log-head h2 { margin: 0; }
+  .log-wrap { overflow-x: auto; border-radius: 14px; background: var(--log-bg); max-height: 320px; overflow-y: auto; }
+  table.log { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: .74rem; color: var(--log-ink); }
+  .log td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; }
+  .log td.time { color: var(--log-dim); white-space: nowrap; }
+  .log td.ep { white-space: nowrap; }
+  .log td.code.ok { color: #6EE7B7; }
+  .log td.code.bad { color: #FCA5A5; }
+  .log td.sum { word-break: break-all; min-width: 260px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+
+  .terms { display: grid; gap: 4px; margin-bottom: 16px; }
+  .week { border-radius: 18px; padding: 14px 16px; margin: 6px 0 16px; background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); }
+  .week .label { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); }
+  .waiting { text-align: center; padding: 28px 8px; color: var(--muted); }
+  .waiting .big { color: var(--text); font-size: 1.2rem; }
+  .collections .amt.out { color: var(--text); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo"><span class="mark" aria-hidden="true">A</span>Abbo</div>
+  <span class="role">Deudor</span>
+  <span class="wallet" id="walletLabel"></span>
+  <span class="spacer"></span>
+  <button class="btn ghost small" id="changeWallet" type="button" hidden>Cambiar billetera</button>
+</header>
+
+<main>
+  <section class="card" id="startCard" aria-labelledby="startTitle" hidden>
+    <h1 id="startTitle">¿Cuál es tu billetera?</h1>
+    <p class="sub">Escribe el nombre de tu billetera de prueba para ver tus ofertas de préstamo.</p>
+    <form id="walletForm" novalidate>
+      <div class="field">
+        <label for="walletName">Nombre de la billetera</label>
+        <div class="input-wrap"><span>ilp.interledger-test.dev/</span><input id="walletName" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="mi-tienda" required></div>
+      </div>
+      <div class="notice error" id="walletError" hidden></div>
+      <button class="btn" type="submit">Continuar</button>
+    </form>
+  </section>
+
+  <section class="card" id="offerCard" aria-labelledby="offerTitle">
+    <h1 id="offerTitle">Oferta de préstamo</h1>
+    <div class="notice error" id="fileWarning" hidden>Abre esta página desde el servidor (por ejemplo <code>http://localhost:8000/demo/deudor.html</code>). Abierta como archivo no puede llamar a la API.</div>
+
+    <div class="waiting" id="waiting">
+      <div class="big">Esperando condiciones</div>
+      <p>Cuando el prestador envíe un préstamo, aparecerá aquí.</p>
+    </div>
+
+    <div id="offer" hidden>
+      <p class="sub">Revisa las condiciones antes de responder.</p>
+      <dl class="terms">
+        <div class="kv"><dt>Monto que recibes</dt><dd id="tPrincipal"></dd></div>
+        <div class="kv"><dt>Tasa de interés</dt><dd id="tRate"></dd></div>
+        <div class="kv"><dt>Total a pagar</dt><dd id="tTotal"></dd></div>
+        <div class="kv"><dt>Porcentaje de cada venta</dt><dd id="tSale"></dd></div>
+        <div class="kv"><dt>Plazo</dt><dd id="tTerm"></dd></div>
+      </dl>
+      <div class="notice info" id="offerHint">Si apruebas, tu billetera te pedirá autorizar dos permisos: cobrar como máximo el total a pagar y leer tus ventas.</div>
+      <div class="notice error" id="offerError" hidden></div>
+      <div class="row" id="offerActions">
+        <button class="btn ghost" id="rejectBtn" type="button">Rechazar</button>
+        <button class="btn" id="approveBtn" type="button">Aprobar</button>
+      </div>
+      <div class="notice" id="offerResult" hidden></div>
+    </div>
+  </section>
+
+  <section class="card" id="statusCard" aria-labelledby="statusTitle">
+    <h1 id="statusTitle">Estado de tu préstamo</h1>
+    <p class="sub" id="loanIdLabel">Sin préstamo todavía.</p>
+    <dl>
+      <div class="kv"><dt>Permiso de cobro</dt><dd id="sGrant">—</dd></div>
+      <div class="kv"><dt>Desembolso recibido</dt><dd id="sDisbursed">—</dd></div>
+      <div class="kv"><dt>Saldo pendiente</dt><dd id="sBalance">—</dd></div>
+    </dl>
+    <div class="week" id="weekBox" hidden>
+      <div class="label">Cobrado esta semana</div>
+      <div class="big num" id="sWeek">—</div>
+      <div class="sub" id="sWeekDetail"></div>
+    </div>
+    <div id="collectionsBox" hidden>
+      <h2>Cobros realizados</h2>
+      <ul class="collections" id="collections"></ul>
+      <div class="poll" id="pollLabel" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="card full" aria-labelledby="logTitle">
+    <div class="log-head">
+      <h2 id="logTitle">Registro de llamadas a la API</h2>
+      <span class="spacer"></span>
+      <button class="btn ghost small" id="clearLog" type="button">Limpiar registro</button>
+    </div>
+    <div class="log-wrap">
+      <table class="log">
+        <tbody id="logBody"><tr><td class="empty">Sin llamadas todavía.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+// ---------- Configuración ----------
+const API_BASE = '';  // misma URL que esta página (FastAPI sirve /demo). Cámbiala si la API vive en otro sitio.
+const WALLET_BASE = 'https://ilp.interledger-test.dev/';
+// Acepta el nombre o la dirección completa pegada: «tienda» o «https://ilp.interledger-test.dev/tienda»
+const walletName = (text) => text.trim().replace(/^https?:\/\/ilp\.interledger-test\.dev\//i, '').replace(/\/+$/, '');
+const VALID_WALLET_NAME = /^[a-z0-9][a-z0-9._-]*$/i;
+const WALLET_KEY = 'abbo:deudor:wallet';  // solo recuerda la billetera en este navegador
+const LOG_KEY = 'abbo:log:deudor';
+const POLL_MS = 3000;          // esperando ofertas
+const POLL_LOAN_MS = 10000;    // préstamo desembolsado
+const ASSET_SCALE = 2;         // COP en las billeteras de prueba
+const MINUTES_PER_DAY = 1440;
+
+const $ = (s) => document.querySelector(s);
+const money = (minor) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 })
+  .format(Number(minor) / 10 ** ASSET_SCALE);
+const when = (iso) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+
+// ---------- Estado (del servidor) ----------
+const UI_STATUS = {
+  offered: 'enviado', rejected: 'rechazado', waiting_approval: 'esperando_permiso', grant_rejected: 'permiso_rechazado',
+  active: 'permiso_aprobado', disbursing: 'desembolsando', disburse_rejected: 'desembolso_rechazado',
+  disbursed: 'desembolsado', paid_off: 'pagado',
+};
+function fromLoan(loan) {
+  const principalMinor = Number(loan.principal), totalMinor = Number(loan.debt);
+  return {
+    loanId: loan.loan_id, loan, status: UI_STATUS[loan.status],
+    terms: {
+      principalMinor, totalMinor, salePct: loan.repayment_rate_percent,
+      ratePct: Math.round((totalMinor / principalMinor - 1) * 1000) / 10,
+      termDays: loan.term_minutes / MINUTES_PER_DAY,
+    },
+  };
+}
+let borrowerWallet = null;  // la elige el deudor al entrar
+let state = null;   // el préstamo más reciente de este deudor, según el servidor
+let busy = '';      // mensaje mientras esta página espera una respuesta
+
+// ---------- Registro de llamadas ----------
+function readLog() { try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { return []; } }
+function addLog(entry) {
+  const log = [entry, ...readLog()].slice(0, 80);
+  try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); } catch (e) {}
+  renderLog();
+}
+function summarize(data) {
+  if (data == null) return '(sin cuerpo)';
+  const text = typeof data === 'string' ? data : JSON.stringify(data);
+  return text.length > 260 ? text.slice(0, 260) + '…' : text;
+}
+// shouldLog: las consultas periódicas solo se registran cuando algo cambió
+async function api(method, path, body, shouldLog = () => true) {
+  const started = new Date();
+  let res, data;
+  try {
+    res = await fetch(API_BASE + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    data = await res.json().catch(() => null);
+  } catch (err) {
+    addLog({ at: started.toISOString(), ep: `${method} ${path}`, code: 'RED', ok: false, sum: String(err) });
+    throw new Error('No se pudo conectar con la API.');
+  }
+  if (!res.ok || shouldLog(data)) addLog({ at: started.toISOString(), ep: `${method} ${path}`, code: res.status, ok: res.ok, sum: summarize(data) });
+  if (!res.ok) throw new Error(typeof data?.detail === 'string' ? data.detail : `Error ${res.status}`);
+  return data;
+}
+
+// ---------- Flujo ----------
+let offerError = '';
+
+async function approve() {
+  if (state?.status !== 'enviado') return;
+  offerError = '';
+  busy = 'Creando el préstamo…';
+  render();
+  try {
+    const r = await api('POST', `/loans/${encodeURIComponent(state.loanId)}/accept`, {
+      borrower_return_url: location.origin + location.pathname,
+    });
+    busy = 'Redirigiendo a tu billetera para autorizar los permisos…';
+    render();
+    location.href = r.approve_url;  // la billetera vuelve a esta página con el resultado
+  } catch (err) {
+    busy = '';
+    offerError = `No se pudo crear el préstamo: ${err.message}`;
+    render();
+  }
+}
+
+async function reject() {
+  if (state?.status !== 'enviado') return;
+  try { state = fromLoan(await api('POST', `/loans/${encodeURIComponent(state.loanId)}/reject`)); }
+  catch (err) { offerError = `No se pudo rechazar: ${err.message}`; }
+  render();
+}
+
+// Solo lectura: el prestador es quien cobra (sync-sales); aquí solo se consulta el préstamo
+let pollTimer = null;
+async function poll() {
+  const wallet = borrowerWallet;
+  if (!wallet) return;
+  const prev = state?.loan;
+  try {
+    const mine = await api('GET', `/loans?borrower_wallet=${encodeURIComponent(wallet)}`, null, (list) => {
+      const l = list.at(-1);
+      return l?.loan_id !== prev?.loan_id || l?.status !== prev?.status || l?.balance !== prev?.balance;
+    });
+    if (wallet !== borrowerWallet) return;  // cambió de billetera mientras esperaba la respuesta
+    const latest = mine.at(-1);
+    if (latest?.loan_id !== prev?.loan_id) offerError = '';
+    state = latest ? fromLoan(latest) : null;
+    $('#pollLabel').textContent = `Actualizado a las ${new Date().toLocaleTimeString('es-CO')}`;
+  } catch (err) {
+    $('#pollLabel').textContent = `No se pudo actualizar: ${err.message}`;
+  }
+  render();
+  pollTimer = setTimeout(poll, state?.status === 'desembolsado' ? POLL_LOAN_MS : POLL_MS);
+}
+
+// Vuelta desde la billetera del deudor: el estado ya lo tiene el servidor, solo se limpia la URL
+function handleReturn() {
+  if (new URLSearchParams(location.search).get('event')) history.replaceState(null, '', location.pathname);
+}
+
+// ---------- Billetera ----------
+function setWallet(name) {
+  borrowerWallet = name ? WALLET_BASE + name : null;
+  try { name ? localStorage.setItem(WALLET_KEY, name) : localStorage.removeItem(WALLET_KEY); } catch (e) {}
+  clearTimeout(pollTimer); pollTimer = null;
+  state = null; offerError = ''; busy = '';
+  $('#walletLabel').textContent = borrowerWallet || '';
+  $('#changeWallet').hidden = !name;
+  $('#startCard').hidden = !!name;
+  $('#offerCard').hidden = !name;
+  $('#statusCard').hidden = !name;
+  render();
+  if (name) poll();
+  else $('#walletName').focus();
+}
+function savedWallet() {
+  // ?wallet=nombre en la URL tiene prioridad (útil para compartir el enlace del deudor)
+  const fromUrl = new URLSearchParams(location.search).get('wallet');
+  if (fromUrl) return walletName(fromUrl);
+  try { return localStorage.getItem(WALLET_KEY); } catch (e) { return null; }
+}
+
+// ---------- Pintar ----------
+function weekStart() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));  // lunes
+  return d;
+}
+function render() {
+  const s = state;
+  const hasOffer = !!s;
+  $('#waiting').hidden = hasOffer;
+  $('#offer').hidden = !hasOffer;
+  if (!hasOffer) {
+    $('#loanIdLabel').textContent = 'Sin préstamo todavía.';
+    for (const id of ['sGrant', 'sDisbursed', 'sBalance']) $('#' + id).textContent = '—';
+    $('#weekBox').hidden = true; $('#collectionsBox').hidden = true;
+    return;
+  }
+  const t = s.terms;
+  $('#tPrincipal').textContent = money(t.principalMinor);
+  $('#tRate').textContent = t.ratePct + ' %';
+  $('#tTotal').textContent = money(t.totalMinor);
+  $('#tSale').textContent = t.salePct + ' %';
+  $('#tTerm').textContent = t.termDays + (t.termDays === 1 ? ' día' : ' días');
+
+  const pending = s.status === 'enviado' && !busy;
+  $('#offerActions').hidden = !pending;
+  $('#offerHint').hidden = !pending;
+  $('#offerError').hidden = !offerError;
+  $('#offerError').textContent = offerError;
+  const result = $('#offerResult');
+  const RESULTS = {
+    rechazado: ['error', 'Rechazaste la oferta. Se le avisó al prestador.'],
+    esperando_permiso: ['info', 'Autoriza los permisos en tu billetera. Si cerraste esa página, vuelve a aprobar.'],
+    permiso_rechazado: ['error', 'No autorizaste los permisos en tu billetera. El préstamo no se desembolsa.'],
+    permiso_aprobado: ['ok', 'Aprobaste la oferta y los permisos. Esperando que el prestador envíe el dinero.'],
+    desembolsando: ['ok', 'El prestador está autorizando el envío del dinero.'],
+    desembolso_rechazado: ['info', 'El prestador todavía no envía el dinero.'],
+    desembolsado: ['ok', 'Recibiste el dinero. Cada venta paga una parte del préstamo.'],
+    pagado: ['ok', 'Pagaste el préstamo por completo.'],
+  };
+  const r = busy ? ['info', busy] : RESULTS[s.status];
+  result.hidden = !r;
+  if (r) { result.className = 'notice ' + r[0]; result.textContent = r[1]; }
+  // Si el deudor cerró la billetera sin responder, puede pedir un enlace nuevo
+  if (s.status === 'esperando_permiso' && !busy) { $('#offerActions').hidden = false; $('#rejectBtn').hidden = true; }
+  else $('#rejectBtn').hidden = false;
+
+  $('#loanIdLabel').textContent = `Préstamo ${s.loanId}`;
+  const GRANT = {
+    enviado: 'Pendiente', rechazado: 'No aplica', esperando_permiso: 'En tu billetera…',
+    permiso_rechazado: 'Rechazado', permiso_aprobado: 'Aprobado', desembolsando: 'Aprobado',
+    desembolso_rechazado: 'Aprobado', desembolsado: 'Aprobado', pagado: 'Finalizado',
+  };
+  const loan = s.loan;
+  const cap = loan.weekly_cap ? ` · hasta ${money(loan.weekly_cap)}` : '';
+  $('#sGrant').textContent = (GRANT[s.status] || '—') + (['permiso_aprobado', 'desembolsando', 'desembolso_rechazado', 'desembolsado'].includes(s.status) ? cap : '');
+
+  const disbursed = ['desembolsado', 'pagado'].includes(s.status);
+  $('#sDisbursed').textContent = disbursed
+    ? `${money(loan.principal)}${loan.disbursed_at ? ' · ' + when(loan.disbursed_at) : ''}`
+    : 'Todavía no';
+  $('#sBalance').textContent = money(loan.balance);
+
+  $('#weekBox').hidden = !disbursed;
+  $('#collectionsBox').hidden = !disbursed;
+  if (!disbursed) return;
+  const reps = loan.repayments || [];
+  const since = weekStart();
+  const thisWeek = reps.filter((x) => new Date(x.paid_at) >= since);
+  $('#sWeek').textContent = money(thisWeek.reduce((sum, x) => sum + Number(x.deduction), 0));
+  $('#sWeekDetail').textContent = `${thisWeek.length} ${thisWeek.length === 1 ? 'cobro' : 'cobros'} desde el lunes ${since.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}.`;
+  const list = $('#collections');
+  list.innerHTML = '';
+  if (!reps.length) list.innerHTML = '<li class="empty">Aún no hay cobros. Se hacen solos cuando recibes una venta.</li>';
+  for (const x of [...reps].reverse()) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span></span><span class="amt out"></span>';
+    li.children[0].textContent = when(x.paid_at);
+    li.children[1].textContent = '− ' + money(x.deduction);
+    list.appendChild(li);
+  }
+}
+function renderLog() {
+  const body = $('#logBody');
+  const log = readLog();
+  body.innerHTML = '';
+  if (!log.length) { body.innerHTML = '<tr><td class="empty">Sin llamadas todavía.</td></tr>'; return; }
+  for (const e of log) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="time"></td><td class="ep"></td><td class="code"></td><td class="sum"></td>';
+    tr.children[0].textContent = new Date(e.at).toLocaleTimeString('es-CO');
+    tr.children[1].textContent = e.ep;
+    tr.children[2].textContent = e.code;
+    tr.children[2].classList.add(e.ok ? 'ok' : 'bad');
+    tr.children[3].textContent = e.sum;
+    body.appendChild(tr);
+  }
+}
+
+// ---------- Eventos ----------
+$('#walletForm').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const name = walletName($('#walletName').value);
+  const error = VALID_WALLET_NAME.test(name) ? '' : 'Escribe el nombre de tu billetera: letras, números, puntos, guiones o guiones bajos.';
+  $('#walletError').hidden = !error;
+  $('#walletError').textContent = error;
+  if (!error) setWallet(name);
+});
+$('#changeWallet').addEventListener('click', () => { $('#walletName').value = ''; setWallet(null); });
+$('#fileWarning').hidden = location.protocol.startsWith('http');
+$('#approveBtn').addEventListener('click', approve);
+$('#rejectBtn').addEventListener('click', reject);
+$('#clearLog').addEventListener('click', () => { localStorage.removeItem(LOG_KEY); renderLog(); });
+
+renderLog();
+const startWallet = savedWallet();
+handleReturn();
+setWallet(startWallet && VALID_WALLET_NAME.test(startWallet) ? startWallet : null);
+</script>
+</body>
+</html>

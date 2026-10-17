@@ -5,14 +5,19 @@ import math
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from urllib.parse import urlencode
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from interfaces.get_keys import generate_keys, get_key_for_wallet
 from interfaces.open_payment import OpenPaymentsInterface
 from models import (
+    AcceptLoanRequest,
     CreateLoanRequest,
     GenerateKeyRequest,
     InitiatePaymentRequest,
@@ -29,7 +34,7 @@ pending_payments: dict[str, dict] = {}
 loans: dict[str, dict] = {}  # in memory for now: lost on restart
 
 ABBO_WALLET_ADDRESS = "https://ilp.interledger-test.dev/abbo"
-REPAYMENT_RATE_PERCENT = 10  # share of each sale that repays the loan
+REPAYMENT_RATE_PERCENT = 10  # default share of each sale that repays the loan
 
 
 def make_client(sender_wallet: str) -> OpenPaymentsInterface:
@@ -45,6 +50,13 @@ def make_client(sender_wallet: str) -> OpenPaymentsInterface:
         private_key_pem=entry["private_key_pem"],
         wallet_address=sender_wallet,
     )
+
+
+def back_to_ui(return_url: str | None, loan_id: str, event: str, fallback: dict):
+    # After a wallet approval, send the browser back to the UI that started it (if any)
+    if return_url:
+        return RedirectResponse(f"{return_url}?{urlencode({'loan_id': loan_id, 'event': event})}")
+    return fallback
 
 
 def verify_interaction_hash(
@@ -129,8 +141,27 @@ def build_interval(start: datetime, term_minutes: int, period_minutes: int) -> s
 #     return {"status": "completed", "payment_id": str(payment_id), "order_id": order_id}
 
 
+def set_status(loan: dict, status: str) -> None:
+    # Both UIs poll the loan, so each change is kept with its time for their timelines
+    loan["status"] = status
+    loan.setdefault("history", []).append({"status": status, "at": datetime.now(UTC).isoformat()})
+
+
+def get_loan_in(loan_id: str, *statuses: str) -> dict:
+    loan = loans.get(loan_id)
+    if loan is None:
+        raise HTTPException(status_code=404, detail=f"Loan '{loan_id}' not found")
+    if loan["status"] not in statuses:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Loan '{loan_id}' is '{loan['status']}': expected one of {', '.join(statuses)}",
+        )
+    return loan
+
+
 @app.post("/loans")
 def create_loan(req: CreateLoanRequest):
+    # The lender's offer: only the terms. Nothing happens in the wallets until the borrower accepts.
     if req.loan_id in loans:
         raise HTTPException(
             status_code=409, detail=f"Loan '{req.loan_id}' already exists"
@@ -149,20 +180,47 @@ def create_loan(req: CreateLoanRequest):
     else:
         cap = int(req.weekly_cap_value)
 
+    loans[req.loan_id] = {
+        "borrower_wallet": req.borrower_wallet,
+        "lender_wallet": req.lender_wallet,
+        "debt": req.amount_value,
+        "principal": req.principal_value or req.amount_value,
+        "repayment_rate_percent": req.repayment_rate_percent,
+        "lender_return_url": req.lender_return_url,
+        "balance": req.amount_value,
+        "weekly_cap": str(cap),
+        "min_cap": str(minimum_cap),
+        "term_minutes": req.term_minutes,
+        "period_minutes": req.period_minutes,
+    }
+    set_status(loans[req.loan_id], "offered")
+    return public_view(req.loan_id)
+
+
+@app.post("/loans/{loan_id}/reject")
+def reject_loan(loan_id: str):
+    set_status(get_loan_in(loan_id, "offered"), "rejected")
+    return public_view(loan_id)
+
+
+@app.post("/loans/{loan_id}/accept")
+def accept_loan(loan_id: str, req: AcceptLoanRequest):
+    # "waiting_approval" is allowed so the borrower can get a fresh approval link
+    loan = get_loan_in(loan_id, "offered", "waiting_approval")
     client = make_client(ABBO_WALLET_ADDRESS)
-    borrower = client.discover_receiver_servers(req.borrower_wallet)
-    lender = client.discover_receiver_servers(req.lender_wallet)
+    borrower = client.discover_receiver_servers(loan["borrower_wallet"])
+    lender = client.discover_receiver_servers(loan["lender_wallet"])
 
     start = datetime.now(UTC)
-    term_end = start + timedelta(minutes=req.term_minutes)
+    term_end = start + timedelta(minutes=loan["term_minutes"])
 
     # 1. The loan's incoming payment on the lender's wallet: accepts at most the debt, until term_end
-    incoming_token = client.request_incoming_payment_grant(req.lender_wallet)
+    incoming_token = client.request_incoming_payment_grant(loan["lender_wallet"])
     lender_incoming_url, _ = client.create_incoming_payment(
-        receiver_wallet=req.lender_wallet,
+        receiver_wallet=loan["lender_wallet"],
         resource_server=lender["resource_server"],
         access_token=incoming_token,
-        amount_value=req.amount_value,
+        amount_value=loan["debt"],
         asset_code=lender["asset_code"],
         asset_scale=lender["asset_scale"],
         expires_at=term_end,
@@ -170,55 +228,54 @@ def create_loan(req: CreateLoanRequest):
 
     # 2. The capped permission on the borrower's wallet (approved once, interactively)
     nonce = secrets.token_urlsafe(16)
-    interval = build_interval(start, req.term_minutes, req.period_minutes)
+    interval = build_interval(start, loan["term_minutes"], loan["period_minutes"])
     redirect_url, pending_grant = client.request_loan_grant(
-        borrower_wallet=req.borrower_wallet,
+        borrower_wallet=loan["borrower_wallet"],
         lender_incoming_url=lender_incoming_url,
-        cap_value=str(cap),
+        cap_value=loan["weekly_cap"],
         interval=interval,
         asset_code=borrower["asset_code"],
         asset_scale=borrower["asset_scale"],
-        finish_uri=f"{CALLBACK_BASE_URL}/loan/{req.loan_id}",
+        finish_uri=f"{CALLBACK_BASE_URL}/loan/{loan_id}",
         nonce=nonce,
     )
 
-    loans[req.loan_id] = {
-        "borrower_wallet": req.borrower_wallet,
-        "lender_wallet": req.lender_wallet,
-        "borrower_auth_server": borrower["auth_server"],
-        "lender_auth_server": lender["auth_server"],
-        "lender_incoming_url": lender_incoming_url,
-        "asset_code": borrower["asset_code"],
-        "asset_scale": borrower["asset_scale"],
-        "debt": req.amount_value,
-        "balance": req.amount_value,
-        "weekly_cap": str(cap),
-        "min_cap": str(minimum_cap),
-        "interval": interval,
-        "term_start": start.isoformat(),
-        "term_end": term_end.isoformat(),
-        "nonce": nonce,
-        "pending_grant": pending_grant,
-        "status": "waiting_approval",
-    }
+    loan.update(
+        {
+            "borrower_auth_server": borrower["auth_server"],
+            "lender_auth_server": lender["auth_server"],
+            "lender_incoming_url": lender_incoming_url,
+            "asset_code": borrower["asset_code"],
+            "asset_scale": borrower["asset_scale"],
+            "borrower_return_url": req.borrower_return_url,
+            "interval": interval,
+            "term_start": start.isoformat(),
+            "term_end": term_end.isoformat(),
+            "nonce": nonce,
+            "pending_grant": pending_grant,
+        }
+    )
+    set_status(loan, "waiting_approval")
     return {
-        "loan_id": req.loan_id,
+        "loan_id": loan_id,
         "approve_url": str(redirect_url),
         "lender_incoming_url": lender_incoming_url,
         "term_end": term_end.isoformat(),
-        "cap_per_period": str(cap),
-        "min_cap": str(minimum_cap),
+        "cap_per_period": loan["weekly_cap"],
         "interval": interval,
     }
 
 
 @app.get("/callback/loan/{loan_id}")
-def loan_callback(loan_id: str, interact_ref: str = Query(...), hash: str = Query(...)):
+def loan_callback(loan_id: str, interact_ref: str | None = None, hash: str | None = None):
     loan = loans.get(loan_id)
     if loan is None or loan["status"] != "waiting_approval":
         raise HTTPException(
             status_code=404, detail=f"No loan waiting approval: '{loan_id}'"
         )
+    if not interact_ref or not hash:  # the borrower rejected the grant in their wallet
+        set_status(loan, "grant_rejected")
+        return back_to_ui(loan["borrower_return_url"], loan_id, "grant_rejected", {"status": "grant_rejected"})
 
     # Check that this redirect really comes from the borrower's wallet
     valid = verify_interaction_hash(
@@ -233,22 +290,20 @@ def loan_callback(loan_id: str, interact_ref: str = Query(...), hash: str = Quer
 
     client = make_client(ABBO_WALLET_ADDRESS)
     loan.update(client.continue_loan_grant(loan.pop("pending_grant"), interact_ref))
-    loan["status"] = "active"
-    return {"loan_id": loan_id, "status": "active", "term_end": loan["term_end"]}
+    set_status(loan, "active")
+    return back_to_ui(
+        loan["borrower_return_url"],
+        loan_id,
+        "grant_approved",
+        {"loan_id": loan_id, "status": "active", "term_end": loan["term_end"]},
+    )
 
 
 @app.post("/loans/{loan_id}/disburse")
 def disburse_loan(loan_id: str):
-    loan = loans.get(loan_id)
-    if loan is None:
-        raise HTTPException(status_code=404, detail=f"Loan '{loan_id}' not found")
     # The borrower must approve the repayment grant before the lender releases the money.
-    # "disbursing" is allowed so the lender can get a fresh approval link.
-    if loan["status"] not in ("active", "disbursing"):
-        raise HTTPException(
-            status_code=409,
-            detail=f"Loan '{loan_id}' is '{loan['status']}': it can be disbursed only when 'active'",
-        )
+    # "disbursing" and "disburse_rejected" are allowed so the lender can try again.
+    loan = get_loan_in(loan_id, "active", "disbursing", "disburse_rejected")
 
     # One-off payment from the lender's wallet to the borrower's wallet; the lender approves it.
     # The amount lands in the borrower's currency, so this assumes both wallets share a currency.
@@ -256,7 +311,7 @@ def disburse_loan(loan_id: str):
     redirect_url, outgoing_grant, lender_resource_server, nonce, quote_id = (
         client.create_payment_request(
             receiver_wallet=loan["borrower_wallet"],
-            amount_value=loan["debt"],
+            amount_value=loan["principal"],
             order_id=loan_id,
             callback_base_url=f"{CALLBACK_BASE_URL}/disburse",
             sender_wallet=loan["lender_wallet"],
@@ -269,16 +324,21 @@ def disburse_loan(loan_id: str):
         "nonce": nonce,
         "quote_id": quote_id,
     }
-    loan["status"] = "disbursing"
+    set_status(loan, "disbursing")
     return {"loan_id": loan_id, "approve_url": str(redirect_url), "status": "disbursing"}
 
 
 @app.get("/callback/disburse/{loan_id}")
-def disburse_callback(loan_id: str, interact_ref: str = Query(...), hash: str = Query(...)):
+def disburse_callback(loan_id: str, interact_ref: str | None = None, hash: str | None = None):
     loan = loans.get(loan_id)
     if loan is None or loan["status"] != "disbursing":
         raise HTTPException(
             status_code=404, detail=f"No loan waiting for disbursement: '{loan_id}'"
+        )
+    if not interact_ref or not hash:  # the lender rejected the payment in their wallet
+        set_status(loan, "disburse_rejected")  # the borrower's grant still stands: the lender can retry
+        return back_to_ui(
+            loan["lender_return_url"], loan_id, "disburse_rejected", {"status": "disburse_rejected"}
         )
     pending = loan["pending_disbursement"]
 
@@ -308,8 +368,13 @@ def disburse_callback(loan_id: str, interact_ref: str = Query(...), hash: str = 
     loan.pop("pending_disbursement")
     loan["disbursement_payment_id"] = str(payment_id)
     loan["disbursed_at"] = datetime.now(UTC).isoformat()
-    loan["status"] = "disbursed"
-    return {"loan_id": loan_id, "status": "disbursed", "payment_id": str(payment_id)}
+    set_status(loan, "disbursed")
+    return back_to_ui(
+        loan["lender_return_url"],
+        loan_id,
+        "disbursed",
+        {"loan_id": loan_id, "status": "disbursed", "payment_id": str(payment_id)},
+    )
 
 
 def get_disbursed_loan(loan_id: str) -> dict:
@@ -330,7 +395,8 @@ def repay_from_sale(loan: dict, sale_id: str, sale_value: int) -> dict:
         return {"status": "duplicate", "sale_id": sale_id, "deduction": "0"}
 
     balance = int(loan["balance"])
-    deduction = min(sale_value * REPAYMENT_RATE_PERCENT // 100, balance)
+    rate = loan.get("repayment_rate_percent", REPAYMENT_RATE_PERCENT)
+    deduction = min(sale_value * rate // 100, balance)
     if deduction <= 0:
         return {"status": "nothing_to_pay", "sale_id": sale_id, "deduction": "0"}
 
@@ -362,7 +428,7 @@ def repay_from_sale(loan: dict, sale_id: str, sale_value: int) -> dict:
         }
     )
     if loan["balance"] == "0":
-        loan["status"] = "paid_off"
+        set_status(loan, "paid_off")
     return {
         "status": "paid",
         "sale_id": sale_id,
@@ -409,17 +475,36 @@ def sync_sales(loan_id: str):
     return {"loan_id": loan_id, "status": loan["status"], "balance": loan["balance"], "results": results}
 
 
+HIDDEN_FIELDS = {
+    "pending_grant",
+    "pending_disbursement",
+    "nonce",
+    "access_token",
+    "manage_url",
+    "continue_token",
+}
+
+
+def public_view(loan_id: str) -> dict:
+    return {"loan_id": loan_id, **{k: v for k, v in loans[loan_id].items() if k not in HIDDEN_FIELDS}}
+
+
+@app.get("/loans")
+def list_loans(borrower_wallet: str | None = None):
+    # Oldest first; the borrower's UI shows the last one
+    return [
+        public_view(loan_id)
+        for loan_id, loan in loans.items()
+        if borrower_wallet is None or loan["borrower_wallet"] == borrower_wallet
+    ]
+
+
 @app.get("/loans/{loan_id}")
 def get_loan(loan_id: str):
-    loan = loans.get(loan_id)
-    if loan is None:
+    if loan_id not in loans:
         raise HTTPException(status_code=404, detail=f"Loan '{loan_id}' not found")
-    hidden = {
-        "pending_grant",
-        "pending_disbursement",
-        "nonce",
-        "access_token",
-        "manage_url",
-        "continue_token",
-    }
-    return {"loan_id": loan_id, **{k: v for k, v in loan.items() if k not in hidden}}
+    return public_view(loan_id)
+
+
+# The lender and borrower UIs, served from the same origin as the API: /demo/prestador.html
+app.mount("/demo", StaticFiles(directory=Path(__file__).resolve().parent.parent / "demo", html=True))
