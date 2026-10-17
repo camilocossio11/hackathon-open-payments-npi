@@ -31,3 +31,8 @@ dependencies = [
 
 [tool.uv.sources]
 open-payments-sdk = { git = "https://github.com/interledger/open-payments-python-sdk" }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.1",
+]

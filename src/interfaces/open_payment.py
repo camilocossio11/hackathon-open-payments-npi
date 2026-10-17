@@ -11,6 +11,9 @@ from open_payments_sdk.models.resource import (
     IncomingPaymentRequest,
     OutgoingPayment,
     OutgoingPaymentRequestWithQuote,
+    PaginatedIncomingPayments,
+    Pagination,
+    PaymentListQuery,
     QuoteFixedSent,
     QuoteRequestBase,
     WalletAddress,
@@ -24,6 +27,17 @@ OutgoingPayment.__annotations__["updatedAt"] = Optional[datetime]
 OutgoingPayment.model_fields["updatedAt"].default = None
 OutgoingPayment.model_config["extra"] = "ignore"
 OutgoingPayment.model_rebuild(force=True)
+
+# From main (list incoming payments): the wallet omits empty pagination fields,
+# and the list query must send walletAddress as "wallet-address"
+for _field in ("startCursor", "endCursor", "hasNextPage", "hasPrevPage"):
+    Pagination.model_fields[_field].default = None
+Pagination.model_rebuild(force=True)
+PaginatedIncomingPayments.model_rebuild(force=True)
+
+PaymentListQuery.model_fields["walletAddress"].serialization_alias = "wallet-address"
+PaymentListQuery.model_config["serialize_by_alias"] = True
+PaymentListQuery.model_rebuild(force=True)
 
 
 class OpenPaymentsInterface:
@@ -219,7 +233,13 @@ class OpenPaymentsInterface:
                             },
                             "interval": interval,
                         },
-                    }
+                    },
+                    # Same approval also lets Abbo read the borrower's sales (incoming payments)
+                    {
+                        "type": "incoming-payment",
+                        "actions": ["list-all", "read-all"],
+                        "identifier": borrower_wallet,
+                    },
                 ]
             },
             client=self.client.client_wallet_address,
@@ -309,6 +329,27 @@ class OpenPaymentsInterface:
             sender_wallet=sender_wallet,
         )
         return str(payment_id), int(quote.receiveAmount.value)
+
+    def list_incoming_payments(
+        self, wallet_address: str, access_token: str
+    ) -> list[IncomingPayment]:
+        # Every incoming payment on the wallet, following the pagination cursor
+        resource_server = self.discover_receiver_servers(wallet_address)["resource_server"]
+        payments: list[IncomingPayment] = []
+        cursor = None
+        while True:
+            fields = {"walletAddress": WalletAddress.model_validate(wallet_address), "first": 20}
+            if cursor:
+                fields["cursor"] = cursor
+            page = self.client.incoming_payments.get_incoming_payments(
+                query=PaymentListQuery.model_construct(**fields),
+                resource_server_endpoint=resource_server,
+                access_token=access_token,
+            )
+            payments.extend(page.result)
+            if not page.pagination.hasNextPage or not page.pagination.endCursor:
+                return payments
+            cursor = page.pagination.endCursor
 
     def create_payment_request(
         self,

@@ -312,8 +312,7 @@ def disburse_callback(loan_id: str, interact_ref: str = Query(...), hash: str = 
     return {"loan_id": loan_id, "status": "disbursed", "payment_id": str(payment_id)}
 
 
-@app.post("/loans/{loan_id}/sales")
-def record_sale(loan_id: str, req: SaleRequest):
+def get_disbursed_loan(loan_id: str) -> dict:
     loan = loans.get(loan_id)
     if loan is None:
         raise HTTPException(status_code=404, detail=f"Loan '{loan_id}' not found")
@@ -322,15 +321,18 @@ def record_sale(loan_id: str, req: SaleRequest):
             status_code=409,
             detail=f"Loan '{loan_id}' is '{loan['status']}': sales repay it only when 'disbursed'",
         )
+    return loan
 
+
+def repay_from_sale(loan: dict, sale_id: str, sale_value: int) -> dict:
     repayments = loan.setdefault("repayments", [])
-    if any(r["sale_id"] == req.sale_id for r in repayments):
-        return {"status": "duplicate", "sale_id": req.sale_id, "deduction": "0"}
+    if any(r["sale_id"] == sale_id for r in repayments):
+        return {"status": "duplicate", "sale_id": sale_id, "deduction": "0"}
 
     balance = int(loan["balance"])
-    deduction = min(int(req.amount_value) * REPAYMENT_RATE_PERCENT // 100, balance)
+    deduction = min(sale_value * REPAYMENT_RATE_PERCENT // 100, balance)
     if deduction <= 0:
-        return {"status": "nothing_to_pay", "sale_id": req.sale_id, "deduction": "0"}
+        return {"status": "nothing_to_pay", "sale_id": sale_id, "deduction": "0"}
 
     # The borrower's wallet enforces the per-period cap: over it, the payment is rejected here
     client = make_client(ABBO_WALLET_ADDRESS)
@@ -352,7 +354,7 @@ def record_sale(loan_id: str, req: SaleRequest):
     loan["balance"] = str(max(balance - received, 0))
     repayments.append(
         {
-            "sale_id": req.sale_id,
+            "sale_id": sale_id,
             "deduction": str(deduction),
             "received": str(received),
             "payment_id": payment_id,
@@ -363,12 +365,48 @@ def record_sale(loan_id: str, req: SaleRequest):
         loan["status"] = "paid_off"
     return {
         "status": "paid",
-        "sale_id": req.sale_id,
+        "sale_id": sale_id,
         "deduction": str(deduction),
         "received": str(received),
         "balance": loan["balance"],
         "payment_id": payment_id,
     }
+
+
+@app.post("/loans/{loan_id}/sales")
+def record_sale(loan_id: str, req: SaleRequest):
+    return repay_from_sale(get_disbursed_loan(loan_id), req.sale_id, int(req.amount_value))
+
+
+@app.post("/loans/{loan_id}/sync-sales")
+def sync_sales(loan_id: str):
+    # Reads the borrower's wallet and repays from every sale received since the disbursement.
+    # Already repaid sales are skipped by sale_id, so calling this again is safe.
+    loan = get_disbursed_loan(loan_id)
+    client = make_client(ABBO_WALLET_ADDRESS)
+    try:
+        incoming = client.list_incoming_payments(loan["borrower_wallet"], loan["access_token"])
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=502, detail=f"Could not read the borrower's payments: {e.response.text}"
+        ) from e
+
+    # Only completed payments: the wallet credits the money when an incoming payment completes.
+    # Created after the disbursement, so older sales and the loan itself are not sales here.
+    disbursed_at = datetime.fromisoformat(loan["disbursed_at"])
+    sales = sorted(
+        (p for p in incoming if p.completed and p.createdAt > disbursed_at),
+        key=lambda p: p.createdAt,
+    )
+
+    results = []
+    for sale in sales:
+        try:
+            results.append(repay_from_sale(loan, str(sale.id), int(sale.receivedAmount.value)))
+        except HTTPException as e:
+            # Not recorded as repaid, so the next sync retries it (e.g. after the cap resets)
+            results.append({"status": "failed", "sale_id": str(sale.id), "detail": e.detail})
+    return {"loan_id": loan_id, "status": loan["status"], "balance": loan["balance"], "results": results}
 
 
 @app.get("/loans/{loan_id}")
