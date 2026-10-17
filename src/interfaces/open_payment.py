@@ -100,15 +100,27 @@ class OpenPaymentsInterface:
         return grant.root.access_token.value
 
     def create_quote(
-        self, resource_server: str, access_token: str, incoming_payment_url: str
+        self,
+        resource_server: str,
+        access_token: str,
+        incoming_payment_url: str,
+        sender_wallet: str,
+        debit_amount: Amount | None = None,
     ):
-        quote_req = QuoteRequestBase.model_construct(
-            walletAddress=WalletAddress.model_validate(
-                self.client.client_wallet_address
-            ),
-            receiver=incoming_payment_url,
-            method="ilp",
-        )
+        # Pass debit_amount (sender's asset) to fix what the sender pays, e.g. one sale's deduction.
+        if debit_amount is None:
+            quote_req = QuoteRequestBase.model_construct(
+                walletAddress=WalletAddress.model_validate(sender_wallet),
+                receiver=incoming_payment_url,
+                method="ilp",
+            )
+        else:
+            quote_req = QuoteFixedSent.model_construct(
+                walletAddress=WalletAddress.model_validate(sender_wallet),
+                receiver=incoming_payment_url,
+                method="ilp",
+                debitAmount=debit_amount,
+            )
         try:
             quote = self.client.quotes.post_create_quote(
                 quote=quote_req,
@@ -138,7 +150,7 @@ class OpenPaymentsInterface:
                     {
                         "type": "outgoing-payment",
                         "actions": ["create", "read"],
-                        "identifier": self.client.client_wallet_address,
+                        "identifier": sender_wallet,
                         "limits": {
                             "receiver": incoming_payment_url,
                             "debitAmount": {
@@ -180,13 +192,16 @@ class OpenPaymentsInterface:
         self,
         borrower_wallet: str,
         lender_incoming_url: str,
-        debt_value: str,
+        cap_value: str,
+        interval: str,
         asset_code: str,
         asset_scale: int,
         finish_uri: str,
         nonce: str,
     ):
-        # The money leaves the borrower's wallet, so the grant lives on the borrower's auth server
+        # The money leaves the borrower's wallet, so the grant lives on the borrower's auth server.
+        # With an interval, debitAmount is the cap per period (the wallet resets it each period).
+        # The total is capped by the lender's incoming payment (incomingAmount = debt).
         auth_server = self.discover_receiver_servers(borrower_wallet)["auth_server"]
         loan_grant_req = GrantRequest(
             access_token={
@@ -198,10 +213,11 @@ class OpenPaymentsInterface:
                         "limits": {
                             "receiver": lender_incoming_url,
                             "debitAmount": {
-                                "value": debt_value,
+                                "value": cap_value,
                                 "assetCode": asset_code,
                                 "assetScale": asset_scale,
                             },
+                            "interval": interval,
                         },
                     }
                 ]
@@ -248,7 +264,7 @@ class OpenPaymentsInterface:
     ):
         payment = OutgoingPaymentRequestWithQuote.model_construct(
             walletAddress=WalletAddress.model_validate(
-                self.client.client_wallet_address
+                sender_wallet
             ),
             quoteId=quote_id,
         )
@@ -266,6 +282,33 @@ class OpenPaymentsInterface:
             print("Outgoing payment error response:", e.response.text)
             raise
         return outgoing.id
+
+    def pay_with_grant(
+        self,
+        sender_wallet: str,
+        incoming_payment_url: str,
+        outgoing_token: str,
+        debit_value: str,
+        asset_code: str,
+        asset_scale: int,
+    ) -> tuple[str, int]:
+        # Pays a fixed amount under an already approved outgoing-payment grant: no redirect.
+        # Returns the payment id and what the receiver gets (after fees).
+        resource_server = self.discover_receiver_servers(sender_wallet)["resource_server"]
+        quote = self.create_quote(
+            resource_server=resource_server,
+            access_token=self.request_quote_grant(sender_wallet),
+            incoming_payment_url=incoming_payment_url,
+            sender_wallet=sender_wallet,
+            debit_amount=Amount(value=debit_value, assetCode=asset_code, assetScale=asset_scale),
+        )
+        payment_id = self.create_outgoing_payment(
+            resource_server=resource_server,
+            outgoing_token=outgoing_token,
+            quote_id=str(quote.id),
+            sender_wallet=sender_wallet,
+        )
+        return str(payment_id), int(quote.receiveAmount.value)
 
     def create_payment_request(
         self,
