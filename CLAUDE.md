@@ -12,7 +12,9 @@
 
 **Repo:** https://github.com/camilocossio11/hackathon-open-payments-npi (local: `hackathon-open-payments-npi/`). Migrated from `gzuluagal/npi-hackathon-interledger` on 2026-10-16.
 
-**What we're building:** a Python client for an Open Payments pipeline that moves money between wallets over the Interledger Protocol (ILP).
+**What we're building:** **Abbo**, a sales-based microloan app for tiendas de barrio (concept doc: `docs/Hackaton/cuota-viva-hackathon-mvp.md`, written under the old working name Cuota Viva). A share of each digital sale repays the tendero's loan to the bank over ILP, within a daily cap the tendero approves once in their own wallet.
+
+**Roles:** Abbo is the Open Payments client (its own wallet `https://ilp.interledger-test.dev/abbo` and the only developer key). The tendero's wallet pays and the bank's wallet receives. Neither needs a key.
 
 **Architecture overview (Open Payments flow):**
 ```
@@ -70,7 +72,7 @@ ruff format --check .   # CI-style check, no writes
 - [ ] **Day 2 PM:** demo script, Google Slides submission, final `USAGE_AI.md` pass
 
 ### Active Ideas
-- _(add here)_
+- Abbo: one standing outgoing-payment grant on the tendero's wallet (`debitAmount` = daily cap, `interval` P1D, `receiver` = the bank's per-loan incoming payment), then one quote and one outgoing payment per sale.
 
 ### Open Payments Implementation Notes
 - The outgoing payment grant **requires user interaction**. Plan the UX for the redirect and approval step early because it's the usual blocker.

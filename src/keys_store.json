@@ -3,8 +3,8 @@
     "kid": "2efed417-a742-4e4a-94cb-a542343d9f9d",
     "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDBEylwNYCdFo3OOG9LxXbWCk9a0leNGcXRw773flNm3\n-----END PRIVATE KEY-----\n"
   },
-  "https://ilp.interledger-test.dev/5d4b8d27": {
-    "kid": "30cf97cc-53f4-4441-a1d5-552501717553",
-    "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIAbBLp5Bxrok5LnyFGgUusScdk0A1p2ZnlEM/dMzk5UJ\n-----END PRIVATE KEY-----\n"
+  "https://ilp.interledger-test.dev/abbo": {
+    "kid": "3b4c1fa7-4704-470e-85fc-cd3b1ed6b80d",
+    "private_key_pem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEICGQGQ6JB+1PU5X3FtiJi1Hx9xiQAlMHqUxrbvgsJeue\n-----END PRIVATE KEY-----\n"
   }
 }
