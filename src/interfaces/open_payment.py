@@ -1,18 +1,34 @@
 import secrets
 from datetime import datetime
+from decimal import Decimal
 from typing import Optional
 
 import httpx
 from open_payments_sdk.client.client import OpenPaymentsClient
-from open_payments_sdk.models.auth import GrantRequest, InteractRef
+from open_payments_sdk.models.auth import Grant, GrantRequest, InteractRef
 from open_payments_sdk.models.resource import (
     Amount,
     IncomingPayment,
     IncomingPaymentRequest,
     OutgoingPayment,
     OutgoingPaymentRequestWithQuote,
+    PaginatedIncomingPayments,
+    Pagination,
+    PaymentListQuery,
     QuoteRequestBase,
     WalletAddress,
+)
+
+from models import IncomingPaymentInfo
+
+from .helper import (
+    compute_loan_payment,
+    filter_by_completed,
+    filter_by_date,
+    get_info_from_incoming_payment,
+    get_last_date,
+    load_last_date,
+    save_last_date,
 )
 
 IncomingPayment.__annotations__["updatedAt"] = Optional[datetime]
@@ -23,6 +39,15 @@ OutgoingPayment.__annotations__["updatedAt"] = Optional[datetime]
 OutgoingPayment.model_fields["updatedAt"].default = None
 OutgoingPayment.model_config["extra"] = "ignore"
 OutgoingPayment.model_rebuild(force=True)
+
+for _field in ("startCursor", "endCursor", "hasNextPage", "hasPrevPage"):
+    Pagination.model_fields[_field].default = None
+Pagination.model_rebuild(force=True)
+PaginatedIncomingPayments.model_rebuild(force=True)
+
+PaymentListQuery.model_fields["walletAddress"].serialization_alias = "wallet-address"
+PaymentListQuery.model_config["serialize_by_alias"] = True
+PaymentListQuery.model_rebuild(force=True)
 
 
 class OpenPaymentsInterface:
@@ -158,15 +183,18 @@ class OpenPaymentsInterface:
         redirect_url = outgoing_grant.root.interact.redirect
         return redirect_url, outgoing_grant
 
-    def continue_outgoing_payment_grant(self, outgoing_grant, interact_ref: str):
-        continue_token = outgoing_grant.root.cont.access_token.value
-        continue_uri = str(outgoing_grant.root.cont.uri)
+    def continue_grant(self, grant: Grant, interact_ref: str) -> str:
+        continue_token = grant.root.cont.access_token.value
+        continue_uri = str(grant.root.cont.uri)
         final_grant = self.client.grants.post_grant_continuation_request(
             interact_ref=InteractRef(interact_ref=interact_ref),
             continue_uri=continue_uri,
             access_token=continue_token,
         )
         return final_grant.access_token.value
+
+    def continue_outgoing_payment_grant(self, outgoing_grant: Grant, interact_ref: str):
+        return self.continue_grant(outgoing_grant, interact_ref)
 
     def create_outgoing_payment(
         self,
@@ -247,3 +275,109 @@ class OpenPaymentsInterface:
         )
 
         return {"status": "completed", "payment_id": str(payment_id), "order_id": order_id}
+
+    def request_list_incoming_payments_grant(
+        self, wallet_address: str, finish_uri: str, nonce: str
+    ):
+        auth_server = self.discover_receiver_servers(wallet_address)["auth_server"]
+        grant_req = GrantRequest(
+            **{
+                "access_token": {
+                    "access": [
+                        {
+                            "type": "incoming-payment",
+                            "actions": ["list-all", "read-all"],
+                            "identifier": wallet_address,
+                        }
+                    ]
+                },
+                "client": self.client.client_wallet_address,
+                "interact": {
+                    "start": ["redirect"],
+                    "finish": {
+                        "method": "redirect",
+                        "uri": finish_uri,
+                        "nonce": nonce,
+                    },
+                },
+            }
+        )
+        try:
+            grant = self.client.grants.post_grant_request(grant_req, auth_server)
+        except httpx.HTTPStatusError as e:
+            print("List incoming payments grant error response:", e.response.text)
+            raise
+        return grant.root.interact.redirect, grant
+
+    def get_incoming_payments(
+        self,
+        wallet_address: str,
+        access_token: str,
+        page_size: int = 1,
+        fetch_all: bool = True,
+    ) -> list[IncomingPaymentInfo]:
+        resource_server = self.discover_receiver_servers(wallet_address)["resource_server"]
+
+        payments: list[IncomingPaymentInfo] = []
+        last_date = load_last_date()
+        cursor = None
+        while True:
+            query_fields = {
+                "walletAddress": WalletAddress.model_validate(wallet_address),
+                "first": page_size,
+            }
+            if cursor:
+                query_fields["cursor"] = cursor
+            query = PaymentListQuery.model_construct(**query_fields)
+            try:
+                page = self.client.incoming_payments.get_incoming_payments(
+                    query=query,
+                    resource_server_endpoint=resource_server,
+                    access_token=access_token,
+                )
+            except httpx.HTTPStatusError as e:
+                print("List incoming payments error response:", e.response.text)
+                raise
+            formatted_payments = [
+                get_info_from_incoming_payment(payment) for payment in page.result
+            ]
+            completed_payments = filter_by_completed(formatted_payments)
+            filtered_payments = (
+                filter_by_date(completed_payments, last_date) if last_date else completed_payments
+            )
+            payments.extend(filtered_payments)
+
+            if (
+                not fetch_all
+                or not filtered_payments
+                or not page.pagination.hasNextPage
+                or not page.pagination.endCursor
+            ):
+                break
+
+            cursor = page.pagination.endCursor
+
+        last_date = get_last_date(payments) if payments else None
+        if last_date:
+            save_last_date(last_date)
+        print(f"Retrieved {len(payments)} incoming payments. Last date: {last_date}")
+        return payments
+
+    def list_incoming_payments_with_loan(
+        self,
+        wallet_address: str,
+        access_token: str,
+        page_size: int = 1,
+        fetch_all: bool = True,
+        percentage_to_pay_loan: Decimal | None = None,
+    ) -> list[IncomingPaymentInfo]:
+        payments = self.get_incoming_payments(
+            wallet_address,
+            access_token,
+            page_size,
+            fetch_all,
+        )
+        payments_with_loans = [
+            compute_loan_payment(payment, percentage_to_pay_loan) for payment in payments
+        ]
+        return payments_with_loans
