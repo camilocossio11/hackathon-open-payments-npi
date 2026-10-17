@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abbo · Prestador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --font-brand: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+    --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg: #EAF2EE;
+    --blob-1: rgba(16,185,129,.22); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.16);
+    --glass: rgba(251,253,252,.72); --glass-2: #FBFDFC; --glass-3: #FFFFFF; --glass-border: #D3E2DA;
+    --text: #0B1F16; --body: #24382F; --muted: #3C5047; --brand-text: #046C4E;
+    --btn-bg: linear-gradient(135deg, #34D399, #2DD4BF); --btn-ink: #03271C;
+    --track: rgba(11,31,22,.08); --fill: linear-gradient(90deg, #10B981, #14B8A6);
+    --ok: #047857; --warn-ink: #6B4300; --warn-bg: #FFF4DC; --danger: #A61B1B; --danger-bg: #FDE8E8;
+    --focus: #1D4ED8; --glow: rgba(16,185,129,.40); --shadow: 0 24px 60px rgba(10,40,28,.12);
+    --log-bg: #0B1F16; --log-ink: #CFE6DA; --log-dim: #7FA393;
+    --blur: blur(24px) saturate(150%);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #06120E;
+      --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
+      --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
+      --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
+      --track: rgba(255,255,255,.10);
+      --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
+      --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
+      --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #06120E;
+    --blob-1: rgba(52,211,153,.28); --blob-2: rgba(45,212,191,.20); --blob-3: rgba(245,184,61,.14);
+    --glass: rgba(255,255,255,.06); --glass-2: rgba(255,255,255,.08); --glass-3: rgba(255,255,255,.12); --glass-border: rgba(255,255,255,.14);
+    --text: #EEF7F2; --body: #BFD8CD; --muted: #A9C5B9; --brand-text: #6EE7B7;
+    --track: rgba(255,255,255,.10);
+    --ok: #6EE7B7; --warn-ink: #FCD34D; --warn-bg: rgba(245,184,61,.12); --danger: #FCA5A5; --danger-bg: rgba(252,165,165,.12);
+    --focus: #93C5FD; --glow: rgba(52,211,153,.5); --shadow: 0 24px 70px rgba(0,0,0,.5);
+    --log-bg: rgba(0,0,0,.35); --log-ink: #CFE6DA; --log-dim: #7FA393;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100dvh; color: var(--text); background-color: var(--bg);
+    background-image:
+      radial-gradient(40vw 40vw at 10% 12%, var(--blob-1), transparent 70%),
+      radial-gradient(36vw 36vw at 90% 15%, var(--blob-2), transparent 70%),
+      radial-gradient(42vw 42vw at 55% 108%, var(--blob-3), transparent 70%);
+    background-attachment: fixed;
+    font: 16px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .num, .kv dd, .big, .log td { font-variant-numeric: tabular-nums; }
+
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 20px; background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid var(--glass-border); }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 800; font-size: 1.3rem; letter-spacing: -.03em; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 12px; background: var(--btn-bg); display: grid; place-items: center; color: var(--btn-ink); font-size: 1.05rem; box-shadow: 0 6px 20px var(--glow); }
+  .role { font-weight: 700; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass-2); }
+  .spacer { flex: 1; }
+  .wallet { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); overflow-wrap: anywhere; }
+
+  main { max-width: 1100px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+  .card { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: 22px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+  .card.full { grid-column: 1 / -1; }
+  h1 { font-size: 1.35rem; line-height: 1.2; letter-spacing: -.015em; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 1rem; margin: 0 0 10px; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 16px; }
+
+  .field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .field label { font-weight: 650; font-size: .9rem; }
+  .field .hint { color: var(--muted); font-size: .8rem; }
+  .input-wrap { display: flex; align-items: center; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--glass-3); padding: 0 12px; }
+  .input-wrap:focus-within { outline: 3px solid var(--focus); outline-offset: 1px; }
+  .input-wrap span { color: var(--muted); font-weight: 600; }
+  .input-wrap input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 1.05rem; font-weight: 650; padding: 12px 8px; outline: none; }
+
+  .total { border-radius: 18px; padding: 14px 16px; margin: 6px 0 16px; background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); }
+  .total .label { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); }
+  .big { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+  .total .detail { color: var(--body); font-size: .85rem; }
+
+  .btn { width: 100%; min-height: 50px; border: 0; border-radius: 999px; background: var(--btn-bg); color: var(--btn-ink); font: inherit; font-weight: 750; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 30px var(--glow); }
+  .btn.ghost { background: var(--glass-2); color: var(--text); border: 1px solid var(--glass-border); box-shadow: none; font-weight: 650; }
+  .btn.small { width: auto; min-height: 38px; padding: 0 14px; font-size: .85rem; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row .btn { flex: 1; }
+
+  .notice { border-radius: 14px; padding: 12px 14px; font-size: .9rem; margin: 0 0 14px; }
+  .notice.info { background: var(--warn-bg); color: var(--warn-ink); }
+  .notice.error { background: var(--danger-bg); color: var(--danger); }
+  .notice.ok { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.10)); color: var(--ok); }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 8px 0; }
+  .steps .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; border: 2px solid var(--glass-border); color: var(--muted); background: var(--glass-3); }
+  .steps li.done .dot { background: var(--btn-bg); color: var(--btn-ink); border-color: transparent; }
+  .steps li.current .dot { border-color: #10B981; color: var(--brand-text); }
+  .steps li.failed .dot { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  .steps .t { font-weight: 700; }
+  .steps .d { color: var(--muted); font-size: .85rem; }
+  .steps li.failed .t { color: var(--danger); }
+
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: .92rem; }
+  .kv:last-child { border-bottom: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 750; text-align: right; }
+  dl { margin: 0; }
+  .bar { height: 12px; border-radius: 999px; background: var(--track); border: 1px solid var(--glass-border); overflow: hidden; margin: 8px 0 4px; }
+  .bar > span { display: block; height: 100%; background: var(--fill); border-radius: 999px; transition: width .6s ease; }
+  .collections { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+  .collections li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--glass-3); border: 1px solid var(--glass-border); font-size: .88rem; }
+  .collections .amt { font-weight: 750; color: var(--ok); }
+  .empty { color: var(--muted); font-size: .88rem; }
+  .poll { font-size: .8rem; color: var(--muted); margin-top: 10px; }
+
+  .log-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .log-head h2 { margin: 0; }
+  .log-wrap { overflow-x: auto; border-radius: 14px; background: var(--log-bg); max-height: 320px; overflow-y: auto; }
+  table.log { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: .74rem; color: var(--log-ink); }
+  .log td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; }
+  .log td.time { color: var(--log-dim); white-space: nowrap; }
+  .log td.ep { white-space: nowrap; }
+  .log td.code.ok { color: #6EE7B7; }
+  .log td.code.bad { color: #FCA5A5; }
+  .log td.sum { word-break: break-all; min-width: 260px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo"><span class="mark" aria-hidden="true">A</span>Abbo</div>
+  <span class="role">Prestador</span>
+  <span class="wallet" id="walletLabel"></span>
+  <span class="spacer"></span>
+  <button class="btn ghost small" id="resetBtn" type="button">Nuevo préstamo</button>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="formTitle">
+    <h1 id="formTitle">Condiciones del préstamo</h1>
+    <p class="sub">Define el préstamo. El deudor lo verá en su pantalla para aprobarlo o rechazarlo.</p>
+    <div class="notice error" id="fileWarning" hidden>Abre esta página desde el servidor (por ejemplo <code>http://localhost:8000/demo/prestador.html</code>). Abierta como archivo no puede llamar a la API.</div>
+
+    <form id="termsForm" novalidate>
+      <div class="field">
+        <label for="borrowerName">Billetera del deudor</label>
+        <div class="input-wrap"><span>ilp.interledger-test.dev/</span><input id="borrowerName" name="borrowerName" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="mi-tienda" required></div>
+      </div>
+      <div class="field">
+        <label for="principal">Monto a prestar</label>
+        <div class="input-wrap"><span>$</span><input id="principal" name="principal" type="number" inputmode="decimal" min="1" step="1" value="1000000" required><span>COP</span></div>
+      </div>
+      <div class="field">
+        <label for="rate">Tasa de interés</label>
+        <div class="input-wrap"><input id="rate" name="rate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="5" required><span>%</span></div>
+        <span class="hint">Se suma una sola vez al monto prestado.</span>
+      </div>
+      <div class="field">
+        <label for="salePct">Porcentaje de cada venta cobrado</label>
+        <div class="input-wrap"><input id="salePct" name="salePct" type="number" inputmode="numeric" min="1" max="100" step="1" value="10" required><span>%</span></div>
+        <span class="hint">De cada venta que reciba el deudor, este porcentaje paga el préstamo.</span>
+      </div>
+      <div class="field">
+        <label for="termDays">Plazo</label>
+        <div class="input-wrap"><input id="termDays" name="termDays" type="number" inputmode="numeric" min="1" max="365" step="1" value="30" required><span>días</span></div>
+      </div>
+
+      <div class="total" aria-live="polite">
+        <div class="label">Total a pagar</div>
+        <div class="big" id="totalOut">—</div>
+        <div class="detail" id="totalDetail"></div>
+      </div>
+      <div class="notice error" id="formError" hidden></div>
+      <button class="btn" id="sendBtn" type="submit">Enviar al deudor</button>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="statusTitle">
+    <h1 id="statusTitle">Estado del préstamo</h1>
+    <p class="sub" id="loanIdLabel">Aún no has enviado condiciones.</p>
+    <div class="notice" id="statusNotice" hidden></div>
+    <ol class="steps" id="steps"></ol>
+    <div id="retryBox" hidden>
+      <button class="btn" id="disburseBtn" type="button">Autorizar desembolso</button>
+    </div>
+    <div id="balanceBox" hidden>
+      <h2>Saldo pendiente</h2>
+      <div class="big num" id="balanceOut">—</div>
+      <div class="bar" role="progressbar" aria-label="Porcentaje pagado" aria-valuemin="0" aria-valuemax="100" id="paidBar"><span id="paidFill" style="width:0%"></span></div>
+      <div class="sub" id="paidLabel"></div>
+      <h2>Cobros recibidos</h2>
+      <ul class="collections" id="collections"></ul>
+      <div class="poll" id="pollLabel" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="card full" aria-labelledby="logTitle">
+    <div class="log-head">
+      <h2 id="logTitle">Registro de llamadas a la API</h2>
+      <span class="spacer"></span>
+      <button class="btn ghost small" id="clearLog" type="button">Limpiar registro</button>
+    </div>
+    <div class="log-wrap">
+      <table class="log">
+        <tbody id="logBody"><tr><td class="empty">Sin llamadas todavía.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+// ---------- Configuración ----------
+const API_BASE = '';  // misma URL que esta página (FastAPI sirve /demo). Cámbiala si la API vive en otro sitio.
+const LENDER_WALLET = 'https://ilp.interledger-test.dev/bank-npi';
+const WALLET_BASE = 'https://ilp.interledger-test.dev/';
+// Acepta el nombre o la dirección completa pegada: «tienda» o «https://ilp.interledger-test.dev/tienda»
+const walletName = (text) => text.trim().replace(/^https?:\/\/ilp\.interledger-test\.dev\//i, '').replace(/\/+$/, '');
+const VALID_WALLET_NAME = /^[a-z0-9][a-z0-9._-]*$/i;
+const LOAN_KEY = 'abbo:prestador:loanId';  // solo recuerda qué préstamo sigue esta página; el estado vive en el servidor
+const LOG_KEY = 'abbo:log:prestador';
+const POLL_MS = 3000;          // mientras espera al deudor
+const POLL_SALES_MS = 10000;   // revisando ventas
+const ASSET_SCALE = 2;         // COP en las billeteras de prueba
+const MINUTES_PER_DAY = 1440;
+
+const $ = (s) => document.querySelector(s);
+const money = (minor) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 })
+  .format(Number(minor) / 10 ** ASSET_SCALE);
+const when = (iso) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+
+// ---------- Estado (del servidor) ----------
+const UI_STATUS = {
+  offered: 'enviado', rejected: 'rechazado', waiting_approval: 'esperando_permiso', grant_rejected: 'permiso_rechazado',
+  active: 'permiso_aprobado', disbursing: 'desembolsando', disburse_rejected: 'desembolso_rechazado',
+  disbursed: 'desembolsado', paid_off: 'pagado',
+};
+function fromLoan(loan) {
+  const principalMinor = Number(loan.principal), totalMinor = Number(loan.debt);
+  return {
+    loanId: loan.loan_id, loan, status: UI_STATUS[loan.status],
+    history: (loan.history || []).map((h) => ({ status: UI_STATUS[h.status], at: h.at })),
+    terms: {
+      principalMinor, totalMinor, salePct: loan.repayment_rate_percent,
+      ratePct: Math.round((totalMinor / principalMinor - 1) * 1000) / 10,
+      termDays: loan.term_minutes / MINUTES_PER_DAY,
+    },
+  };
+}
+let state = null;        // el préstamo tal como lo devuelve el servidor
+let disburseError = '';  // solo de esta página
+function savedLoanId() { try { return localStorage.getItem(LOAN_KEY); } catch (e) { return null; } }
+function saveLoanId(id) { try { id ? localStorage.setItem(LOAN_KEY, id) : localStorage.removeItem(LOAN_KEY); } catch (e) {} }
+
+// ---------- Registro de llamadas ----------
+function readLog() { try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { return []; } }
+function addLog(entry) {
+  const log = [entry, ...readLog()].slice(0, 80);
+  try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); } catch (e) {}
+  renderLog();
+}
+function summarize(data) {
+  if (data == null) return '(sin cuerpo)';
+  const text = typeof data === 'string' ? data : JSON.stringify(data);
+  return text.length > 260 ? text.slice(0, 260) + '…' : text;
+}
+// shouldLog: las consultas periódicas solo se registran cuando algo cambió
+async function api(method, path, body, shouldLog = () => true) {
+  const started = new Date();
+  let res, data;
+  try {
+    res = await fetch(API_BASE + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    data = await res.json().catch(() => null);
+  } catch (err) {
+    addLog({ at: started.toISOString(), ep: `${method} ${path}`, code: 'RED', ok: false, sum: String(err) });
+    throw new Error('No se pudo conectar con la API.');
+  }
+  if (!res.ok || shouldLog(data)) addLog({ at: started.toISOString(), ep: `${method} ${path}`, code: res.status, ok: res.ok, sum: summarize(data) });
+  if (!res.ok) throw new Error(typeof data?.detail === 'string' ? data.detail : `Error ${res.status}`);
+  return data;
+}
+
+// ---------- Formulario ----------
+function readTerms() {
+  const borrowerName = walletName($('#borrowerName').value);
+  const principal = Number($('#principal').value);
+  const ratePct = Number($('#rate').value);
+  const salePct = Number($('#salePct').value);
+  const termDays = Number($('#termDays').value);
+  const principalMinor = Math.round(principal * 10 ** ASSET_SCALE);
+  const totalMinor = Math.round(principalMinor * (1 + ratePct / 100));
+  let error = '';
+  if (!(principal > 0)) error = 'Escribe un monto mayor que cero.';
+  else if (!(ratePct >= 0 && ratePct <= 100)) error = 'La tasa debe estar entre 0 % y 100 %.';
+  else if (!(Number.isInteger(salePct) && salePct >= 1 && salePct <= 100)) error = 'El porcentaje por venta debe ser un número entero entre 1 y 100.';
+  else if (!(Number.isInteger(termDays) && termDays >= 1 && termDays <= 365)) error = 'El plazo debe ser un número entero de días entre 1 y 365.';
+  // Aparte: el total se puede mostrar aunque falte la billetera
+  const walletError = VALID_WALLET_NAME.test(borrowerName) ? '' : 'Escribe el nombre de la billetera del deudor: letras, números, puntos, guiones o guiones bajos.';
+  return { borrowerName, principal, ratePct, salePct, termDays, principalMinor, totalMinor, error, walletError };
+}
+function renderTotal() {
+  const t = readTerms();
+  $('#totalOut').textContent = t.error ? '—' : money(t.totalMinor);
+  $('#totalDetail').textContent = t.error ? '' :
+    `${money(t.principalMinor)} de capital + ${money(t.totalMinor - t.principalMinor)} de interés (${t.ratePct} %). Se cobra el ${t.salePct} % de cada venta durante ${t.termDays} días.`;
+}
+
+// ---------- Flujo ----------
+const FINAL = ['rechazado', 'permiso_rechazado', 'pagado'];
+
+async function sendTerms(t) {
+  const termMinutes = t.termDays * MINUTES_PER_DAY;
+  const loan = await api('POST', '/loans', {
+    loan_id: 'prestamo-' + Date.now(),
+    borrower_wallet: WALLET_BASE + t.borrowerName,
+    lender_wallet: LENDER_WALLET,
+    amount_value: String(t.totalMinor),        // deuda = capital + interés
+    principal_value: String(t.principalMinor), // lo que desembolsa el prestador
+    weekly_cap_value: String(t.totalMinor),    // permiso de cobro: como máximo el total...
+    term_minutes: termMinutes,
+    period_minutes: termMinutes,               // ...en un solo periodo que dura todo el plazo
+    repayment_rate_percent: t.salePct,
+    lender_return_url: location.origin + location.pathname,
+  });
+  saveLoanId(loan.loan_id);
+  state = fromLoan(loan);
+  disburseError = '';
+  render();
+  restartPolling();
+}
+
+let autoDisbursed = false;  // una sola vez por carga: si falla, el banco usa el botón
+async function startDisbursement() {
+  if (!state) return;
+  autoDisbursed = true;
+  disburseError = '';
+  try {
+    const r = await api('POST', `/loans/${encodeURIComponent(state.loanId)}/disburse`);
+    location.href = r.approve_url;  // misma pestaña: la billetera del banco vuelve a esta página
+  } catch (err) {
+    disburseError = `No se pudo iniciar el desembolso: ${err.message}`;
+    render();
+  }
+}
+
+let pollTimer = null;
+async function poll() {
+  pollTimer = null;
+  const id = savedLoanId();
+  if (!id) return;
+  const path = `/loans/${encodeURIComponent(id)}`;
+  if (state?.status === 'desembolsado') {
+    try { await api('POST', `${path}/sync-sales`, null, (r) => r.results.some((x) => x.status !== 'duplicate')); }
+    catch (err) { $('#pollLabel').textContent = `Última revisión con error: ${err.message}`; }
+  }
+  try {
+    const prev = state?.loan;
+    const loan = await api('GET', path, null, (l) => l.status !== prev?.status || l.balance !== prev?.balance);
+    state = fromLoan(loan);
+  } catch (err) { /* ya quedó en el registro */ }
+  render();
+  if (state?.status === 'permiso_aprobado' && !autoDisbursed) return startDisbursement();
+  if (!state || FINAL.includes(state.status)) return;
+  if (state.status === 'desembolsado') {
+    $('#pollLabel').textContent = `Revisando ventas nuevas cada ${POLL_SALES_MS / 1000} s. Última revisión: ${new Date().toLocaleTimeString('es-CO')}`;
+  }
+  pollTimer = setTimeout(poll, state.status === 'desembolsado' ? POLL_SALES_MS : POLL_MS);  // la siguiente empieza cuando termina esta
+}
+function restartPolling() { clearTimeout(pollTimer); poll(); }
+
+// Vuelta desde la billetera del banco (callback del backend → esta página)
+function handleReturn() {
+  const params = new URLSearchParams(location.search);
+  const event = params.get('event');
+  if (!event) return;
+  if (params.get('loan_id')) saveLoanId(params.get('loan_id'));
+  history.replaceState(null, '', location.pathname);
+  if (event === 'disburse_rejected') disburseError = 'Rechazaste el desembolso en la billetera del banco. Puedes intentarlo de nuevo.';
+}
+
+// ---------- Pintar ----------
+const STEPS = [
+  { key: 'enviado', t: 'Condiciones enviadas', d: 'El deudor las está revisando.' },
+  { key: 'aprobado', t: 'Aprobadas por el deudor', d: 'Esperando la respuesta del deudor.' },
+  { key: 'permiso', t: 'Permiso de cobro aprobado', d: 'El deudor autoriza los cobros en su billetera.' },
+  { key: 'desembolso', t: 'Desembolso completado', d: 'Autoriza el envío del dinero en la billetera del banco.' },
+  { key: 'cobros', t: 'Cobros recibidos', d: 'Cada venta del deudor paga una parte.' },
+];
+// Para cada estado: cuántos pasos están completos y cuál falló
+const PROGRESS = {
+  enviado: { done: 1 }, rechazado: { done: 1, failed: 1 },
+  esperando_permiso: { done: 2 }, permiso_rechazado: { done: 2, failed: 2 },
+  permiso_aprobado: { done: 3 }, desembolsando: { done: 3 }, desembolso_rechazado: { done: 3, failed: 3 },
+  desembolsado: { done: 4 }, pagado: { done: 5 },
+};
+function stepDetail(i, s) {
+  const st = s.status;
+  if (i === 1 && st === 'rechazado') return ['Rechazadas por el deudor', 'El deudor no aceptó las condiciones. Puedes enviar otras.'];
+  if (i === 1 && PROGRESS[st].done > 1) return ['Aprobadas por el deudor', at(s, 'esperando_permiso')];
+  if (i === 2 && st === 'permiso_rechazado') return ['Permiso de cobro rechazado', 'El deudor no autorizó los cobros en su billetera.'];
+  if (i === 2 && st === 'esperando_permiso') return [STEPS[2].t, 'El deudor está autorizando en su billetera…'];
+  if (i === 2 && PROGRESS[st].done > 2) return [STEPS[2].t, at(s, 'permiso_aprobado')];
+  if (i === 3 && st === 'permiso_aprobado' && disburseError) return ['Desembolso pendiente', disburseError];
+  if (i === 3 && st === 'desembolsando') return ['Desembolso en curso', 'Autoriza el envío en la billetera del banco.'];
+  if (i === 3 && st === 'desembolso_rechazado') return ['Desembolso pendiente', disburseError || 'El banco rechazó el envío. Puedes intentarlo de nuevo.'];
+  if (i === 3 && PROGRESS[st].done > 3) return ['Desembolso completado', s.loan?.disbursed_at ? `${money(s.loan.principal)} enviados el ${when(s.loan.disbursed_at)}` : at(s, 'desembolsado')];
+  if (i === 4 && st === 'pagado') return ['Préstamo pagado', 'El deudor completó el pago.'];
+  if (i === 0) return [STEPS[0].t, PROGRESS[st].done > 1 ? at(s, 'enviado') : STEPS[0].d];
+  return [STEPS[i].t, STEPS[i].d];
+}
+function at(s, status) {
+  const h = (s.history || []).filter((x) => x.status === status).pop();
+  return h ? when(h.at) : '';
+}
+function render() {
+  const s = state;
+  const busy = s && !FINAL.includes(s.status);
+  $('#sendBtn').disabled = !!busy;
+  $('#sendBtn').textContent = busy ? 'Préstamo en curso' : 'Enviar al deudor';
+  for (const id of ['borrowerName', 'principal', 'rate', 'salePct', 'termDays']) $('#' + id).disabled = !!busy;
+
+  const notice = $('#statusNotice');
+  notice.hidden = true;
+  if (!s) {
+    $('#loanIdLabel').textContent = 'Aún no has enviado condiciones.';
+    $('#steps').innerHTML = '';
+    $('#balanceBox').hidden = true;
+    $('#retryBox').hidden = true;
+    return;
+  }
+  // Tras volver de la billetera el formulario se recarga vacío: se rellena con el deudor del préstamo
+  if (!$('#borrowerName').value) $('#borrowerName').value = walletName(s.loan.borrower_wallet);
+  $('#loanIdLabel').textContent = `Préstamo ${s.loanId} · para ${walletName(s.loan.borrower_wallet)} · ${money(s.terms.totalMinor)} en total · ${s.terms.salePct} % por venta`;
+
+  const prog = PROGRESS[s.status] || { done: 0 };
+  const steps = $('#steps');
+  steps.innerHTML = '';
+  STEPS.forEach((step, i) => {
+    const li = document.createElement('li');
+    const failed = prog.failed === i;
+    li.className = failed ? 'failed' : i < prog.done ? 'done' : i === prog.done ? 'current' : '';
+    const [t, d] = stepDetail(i, s);
+    li.innerHTML = `<span class="dot" aria-hidden="true">${failed ? '✕' : i < prog.done ? '✓' : i + 1}</span><div><div class="t"></div><div class="d"></div></div>`;
+    li.querySelector('.t').textContent = t;
+    li.querySelector('.d').textContent = d;
+    steps.appendChild(li);
+  });
+
+  if (s.status === 'rechazado') { notice.hidden = false; notice.className = 'notice error'; notice.textContent = 'El deudor rechazó las condiciones. Pulsa «Nuevo préstamo» para enviar otras.'; }
+  if (s.status === 'permiso_rechazado') { notice.hidden = false; notice.className = 'notice error'; notice.textContent = 'El deudor no autorizó los cobros en su billetera. El préstamo no se desembolsa.'; }
+  if (s.status === 'pagado') { notice.hidden = false; notice.className = 'notice ok'; notice.textContent = 'Préstamo pagado por completo.'; }
+
+  // También en «desembolsando»: si se vuelve de la billetera sin resultado, se puede reintentar
+  $('#retryBox').hidden = !(['desembolso_rechazado', 'desembolsando'].includes(s.status) || (s.status === 'permiso_aprobado' && disburseError));
+
+  const loan = s.loan;
+  const showBalance = ['desembolsado', 'pagado'].includes(s.status);
+  $('#balanceBox').hidden = !showBalance;
+  if (showBalance) {
+    const debt = Number(loan.debt);
+    const balance = Number(loan.balance);
+    const paidPct = debt ? Math.round(((debt - balance) / debt) * 1000) / 10 : 0;  // una cifra decimal
+    $('#balanceOut').textContent = money(balance);
+    $('#paidFill').style.width = paidPct + '%';
+    $('#paidBar').setAttribute('aria-valuenow', String(paidPct));
+    $('#paidLabel').textContent = `Pagado ${money(debt - balance)} de ${money(debt)} (${paidPct} %).`;
+    if (s.status === 'pagado') $('#pollLabel').textContent = 'Préstamo pagado. Se detuvo la revisión de ventas.';
+    const list = $('#collections');
+    list.innerHTML = '';
+    const reps = [...(loan.repayments || [])].reverse();
+    if (!reps.length) list.innerHTML = '<li class="empty">Todavía no hay cobros. Llegan cuando el deudor reciba ventas.</li>';
+    for (const r of reps) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span></span><span class="amt"></span>';
+      li.children[0].textContent = when(r.paid_at);
+      li.children[1].textContent = '+ ' + money(r.received);
+      list.appendChild(li);
+    }
+  }
+}
+function renderLog() {
+  const body = $('#logBody');
+  const log = readLog();
+  body.innerHTML = '';
+  if (!log.length) { body.innerHTML = '<tr><td class="empty">Sin llamadas todavía.</td></tr>'; return; }
+  for (const e of log) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="time"></td><td class="ep"></td><td class="code"></td><td class="sum"></td>';
+    tr.children[0].textContent = new Date(e.at).toLocaleTimeString('es-CO');
+    tr.children[1].textContent = e.ep;
+    tr.children[2].textContent = e.code;
+    tr.children[2].classList.add(e.ok ? 'ok' : 'bad');
+    tr.children[3].textContent = e.sum;
+    body.appendChild(tr);
+  }
+}
+
+// ---------- Eventos ----------
+$('#walletLabel').textContent = LENDER_WALLET;
+$('#fileWarning').hidden = location.protocol.startsWith('http');
+for (const id of ['principal', 'rate', 'salePct', 'termDays']) $('#' + id).addEventListener('input', renderTotal);
+
+$('#termsForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const t = readTerms();
+  const error = t.walletError || t.error;
+  $('#formError').hidden = !error;
+  $('#formError').textContent = error;
+  if (error) return;
+  $('#sendBtn').disabled = true;
+  try {
+    await sendTerms(t);
+  } catch (err) {
+    $('#formError').hidden = false;
+    $('#formError').textContent = `No se pudo enviar: ${err.message}`;
+    render();
+  }
+});
+$('#disburseBtn').addEventListener('click', startDisbursement);
+$('#resetBtn').addEventListener('click', () => {
+  saveLoanId(null);
+  clearTimeout(pollTimer); pollTimer = null;
+  state = null; disburseError = ''; autoDisbursed = false;
+  render();
+});
+$('#clearLog').addEventListener('click', () => { localStorage.removeItem(LOG_KEY); renderLog(); });
+
+renderTotal();
+renderLog();
+handleReturn();
+render();
+poll();
+</script>
+</body>
+</html>
