@@ -28,7 +28,7 @@
     // Pinta el relleno del deslizador hasta el pulgar
     fill(range) {
       const min = Number(range.min) || 0, max = Number(range.max) || 100;
-      const p = Math.max(0, Math.min(100, ((Number(range.value) - min) / (max - min)) * 100));
+      const p = max > min ? Math.max(0, Math.min(100, ((Number(range.value) - min) / (max - min)) * 100)) : 100;
       range.style.setProperty('--p', p + '%');
     },
     // Une un deslizador con su campo numérico: mover uno actualiza el otro y dispara «input» en el campo

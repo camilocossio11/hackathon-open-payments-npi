@@ -21,6 +21,8 @@
   .needed svg { width: 18px; height: 18px; flex: none; color: var(--brand); margin-top: 2px; }
   .example-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
   .example-head .hint b { color: var(--text); }
+  .val.money input { width: 9ch; }
+  #capHint.bad { color: var(--bad-ink); font-weight: 700; }
   @media (max-width: 940px) { .status-card { position: relative; top: 0; } }
 </style>
 </head>
@@ -103,6 +105,15 @@
           </div>
           <input class="slider" id="termRange" type="range" min="1" max="365" step="1" value="30" aria-label="Plazo en días">
           <div class="ticks" aria-hidden="true"><span>1 día</span><span>6 meses</span><span>1 año</span></div>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="weeklyCap">Tope semanal de cobro</label>
+            <span class="val money"><span>$</span><input id="weeklyCap" name="weeklyCap" type="number" inputmode="numeric" min="1" step="1" required aria-describedby="capHint"></span>
+          </div>
+          <input class="slider" id="capRange" type="range" min="1" max="100" step="1" aria-label="Tope semanal de cobro" aria-describedby="capHint">
+          <div class="ticks" aria-hidden="true"><span id="capMinTick">mínimo</span><span id="capMaxTick">total</span></div>
+          <p class="hint" id="capHint">Lo máximo que la billetera del deudor deja cobrar cada semana.</p>
         </div>
 
         <h2><span class="badge-num">4</span>Así cobra Abbo</h2>
@@ -207,6 +218,9 @@ const POLL_MS = 3000;          // mientras espera al deudor
 const POLL_SALES_MS = 10000;   // revisando ventas
 const ASSET_SCALE = 2;         // COP en las billeteras de prueba
 const MINUTES_PER_DAY = 1440;
+const PERIOD_MINUTES = 7 * MINUTES_PER_DAY;  // el tope de cobro se renueva cada semana
+const weeksIn = (termDays) => Math.max(1, Math.ceil(termDays / 7));  // igual que count_periods en el backend
+const capText = (loan) => `${money(loan.weekly_cap)} ${loan.period_minutes === PERIOD_MINUTES ? 'por semana' : 'en total'}`;
 
 const $ = (s) => document.querySelector(s);
 const money = (minor) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 })
@@ -277,6 +291,10 @@ function readTerms() {
   const termDays = Number($('#termDays').value);
   const principalMinor = Math.round(principal * 10 ** ASSET_SCALE);
   const totalMinor = Math.round(principalMinor * (1 + ratePct / 100));
+  // Tope semanal: el backend exige al menos deuda / semanas del plazo
+  const weeks = weeksIn(termDays);
+  const minCapMinor = Math.ceil(totalMinor / weeks);
+  const capMinor = Math.round(Number($('#weeklyCap').value) * 10 ** ASSET_SCALE);
   let error = '';
   if (!(principal > 0)) error = 'Escribe un monto mayor que cero.';
   else if (!(ratePct >= 0 && ratePct <= 25)) error = 'La tasa debe estar entre 0 % y 25 % (tasa de usura).';
@@ -284,14 +302,43 @@ function readTerms() {
   else if (!(Number.isInteger(termDays) && termDays >= 1 && termDays <= 365)) error = 'El plazo debe ser un número entero de días entre 1 y 365.';
   // Aparte: el total se puede mostrar aunque falte la billetera
   const walletError = VALID_WALLET_NAME.test(borrowerName) ? '' : 'Escribe el nombre de la billetera del deudor: letras, números, puntos, guiones o guiones bajos.';
-  return { borrowerName, principal, ratePct, salePct, termDays, principalMinor, totalMinor, error, walletError };
+  const capError = capMinor >= minCapMinor ? '' :
+    `El tope semanal debe ser al menos ${money(minCapMinor)} para pagar ${money(totalMinor)} en ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}.`;
+  return { borrowerName, principal, ratePct, salePct, termDays, principalMinor, totalMinor, weeks, minCapMinor, capMinor, error, walletError, capError };
 }
 function renderTotal() {
+  const first = readTerms();
+  if (!first.error) syncCap(first);  // los límites del tope dependen del total y del plazo
   const t = readTerms();
   $('#totalOut').textContent = t.error ? '—' : money(t.totalMinor);
   $('#totalDetail').textContent = t.error ? '' :
-    `${money(t.principalMinor)} de capital + ${money(t.totalMinor - t.principalMinor)} de interés (${t.ratePct} %). Se cobra el ${t.salePct} % de cada venta durante ${t.termDays} días.`;
+    `${money(t.principalMinor)} de capital + ${money(t.totalMinor - t.principalMinor)} de interés (${t.ratePct} %). Se cobra el ${t.salePct} % de cada venta durante ${t.termDays} días` +
+    (t.capError ? '.' : `, máximo ${money(t.capMinor)} por semana.`);
   renderPreview(t);
+}
+
+// ---------- Tope semanal ----------
+let capTouched = false;  // hasta que el prestador lo mueva, el tope sigue al total y al plazo
+function syncCap(t) {
+  const range = $('#capRange'), input = $('#weeklyCap');
+  const minPesos = Math.ceil(t.minCapMinor / 10 ** ASSET_SCALE);
+  const maxPesos = Math.max(minPesos, Math.ceil(t.totalMinor / 10 ** ASSET_SCALE));
+  range.min = minPesos;
+  range.max = maxPesos;
+  // Por defecto: el doble del mínimo (redondeado a mil), para que una semana floja no atrase el pago
+  if (!capTouched) input.value = Math.min(maxPesos, Math.ceil((minPesos * 2) / 1000) * 1000);
+  range.value = input.value;
+  AbboUI.fill(range);
+  $('#capMinTick').textContent = 'mín. ' + money(minPesos * 10 ** ASSET_SCALE);
+  $('#capMaxTick').textContent = 'total ' + money(maxPesos * 10 ** ASSET_SCALE);
+}
+function renderCapHint(t) {
+  const hint = $('#capHint');
+  hint.classList.toggle('bad', !!t.capError);
+  if (t.capError) { hint.textContent = t.capError; return; }
+  if (t.weeks === 1) { hint.textContent = 'Con un plazo de una semana o menos, el tope es el total a pagar.'; return; }
+  const fastest = Math.ceil(t.totalMinor / t.capMinor);
+  hint.textContent = `Lo máximo que la billetera del deudor deja cobrar cada semana. Con este tope se paga en ${fastest} ${fastest === 1 ? 'semana' : 'semanas'} como mínimo; el plazo da ${t.weeks}.`;
 }
 
 // ---------- Vista previa (solo presentación) ----------
@@ -303,6 +350,7 @@ function renderPreview(t) {
   renderExample();
   $('#neededBox').hidden = !!t.error;
   if (t.error) return;
+  renderCapHint(t);
   const neededMinor = Math.ceil(t.totalMinor * 100 / t.salePct);
   $('#neededText').textContent = `Para terminar de pagar, la tienda debe vender en digital ${money(neededMinor)} en total: unos ${money(Math.ceil(neededMinor / t.termDays))} al día durante ${t.termDays} ${t.termDays === 1 ? 'día' : 'días'}.`;
 }
@@ -339,9 +387,9 @@ async function sendTerms(t) {
     lender_wallet: LENDER_WALLET,
     amount_value: String(t.totalMinor),        // deuda = capital + interés
     principal_value: String(t.principalMinor), // lo que desembolsa el prestador
-    weekly_cap_value: String(t.totalMinor),    // permiso de cobro: como máximo el total...
+    weekly_cap_value: String(t.capMinor),      // permiso de cobro: como máximo este tope...
     term_minutes: termMinutes,
-    period_minutes: termMinutes,               // ...en un solo periodo que dura todo el plazo
+    period_minutes: PERIOD_MINUTES,            // ...cada semana, hasta que termine el plazo
     repayment_rate_percent: t.salePct,
     lender_return_url: location.origin + location.pathname,
   });
@@ -440,7 +488,7 @@ function render() {
   const busy = s && !FINAL.includes(s.status);
   $('#sendBtn').disabled = !!busy;
   $('#sendBtn').textContent = busy ? 'Préstamo en curso' : 'Enviar al deudor';
-  for (const id of ['borrowerName', 'principal', 'rate', 'salePct', 'termDays']) $('#' + id).disabled = !!busy;
+  for (const id of ['borrowerName', 'principal', 'rate', 'salePct', 'termDays', 'weeklyCap']) $('#' + id).disabled = !!busy;
   for (const el of document.querySelectorAll('#termsForm .slider:not(#exSale), #termsForm .chip')) el.disabled = !!busy;
   renderPill(s);
 
@@ -455,7 +503,7 @@ function render() {
   }
   // Tras volver de la billetera el formulario se recarga vacío: se rellena con el deudor del préstamo
   if (!$('#borrowerName').value) $('#borrowerName').value = walletName(s.loan.borrower_wallet);
-  $('#loanIdLabel').textContent = `Préstamo ${s.loanId} · para ${walletName(s.loan.borrower_wallet)} · ${money(s.terms.totalMinor)} en total · ${s.terms.salePct} % por venta`;
+  $('#loanIdLabel').textContent = `Préstamo ${s.loanId} · para ${walletName(s.loan.borrower_wallet)} · ${money(s.terms.totalMinor)} en total · ${s.terms.salePct} % por venta · tope ${capText(s.loan)}`;
 
   const prog = PROGRESS[s.status] || { done: 0 };
   const steps = $('#steps');
@@ -532,6 +580,8 @@ AbboUI.themeToggle($('#themeBtn'));
 AbboUI.link($('#rateRange'), $('#rate'));
 AbboUI.link($('#salePctRange'), $('#salePct'));
 AbboUI.link($('#termRange'), $('#termDays'));
+$('#weeklyCap').addEventListener('input', () => { capTouched = true; renderTotal(); });
+AbboUI.link($('#capRange'), $('#weeklyCap'));
 for (const chip of document.querySelectorAll('[data-amount]')) {
   chip.addEventListener('click', () => {
     $('#principal').value = chip.dataset.amount;
@@ -545,7 +595,7 @@ $('#logCard').addEventListener('toggle', () => { try { localStorage.setItem('abb
 $('#termsForm').addEventListener('submit', async (ev) => {
   ev.preventDefault();
   const t = readTerms();
-  const error = t.walletError || t.error;
+  const error = t.walletError || t.error || t.capError;
   $('#formError').hidden = !error;
   $('#formError').textContent = error;
   if (error) return;
