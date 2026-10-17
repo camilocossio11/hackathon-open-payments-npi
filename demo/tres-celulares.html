@@ -7,12 +7,12 @@
 <title>Abbo En Vivo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
   :root {
     /* fonts */
     --font-brand: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif; /* solo el logo */
-    --font-display: var(--font-ui); /* títulos, subtítulos y números: sans tranquila */
+    --font-display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif; /* títulos y montos */
     --font-ui: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -125,7 +125,7 @@
   .col { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 0; }
   .col-label { text-align: center; }
   .col-label .step { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--btn-bg); color: var(--btn-ink); font-family: var(--font-display); font-weight: 700; font-size: .8rem; margin-right: 8px; }
-  .col-label strong { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; letter-spacing: 0; }
+  .col-label strong { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; letter-spacing: 0; }
   .col-label div { font-size: var(--fs-small); color: var(--muted); font-weight: 500; }
   .flow { align-self: center; font-size: 1.6rem; color: var(--muted); opacity: .7; }
 
@@ -149,16 +149,17 @@
   .notch { width: 110px; height: 28px; border-radius: var(--r-pill); background: #020604; margin: 10px auto 0; flex: none; }
   :root[data-contrast="high"] .notch { background: #000; }
   .statusbar { display: flex; justify-content: space-between; padding: 0 28px; margin-top: -22px; font-size: .68rem; font-weight: 700; color: var(--muted); height: 18px; }
-  .appbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; border-bottom: 1px solid var(--glass-border); }
-  .avatar { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; font-size: 1.3rem; background: var(--glass-3); border: 1px solid var(--glass-border); flex: none; }
+  .appbar { display: flex; align-items: center; gap: 12px; padding: 16px 16px 12px; border-bottom: 1px solid var(--glass-border); }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex: none; box-shadow: 0 0 0 2px var(--glass-3), 0 0 0 4px #34D399; }
+  .avatar svg { display: block; width: 100%; height: 100%; }
   .who { flex: 1; min-width: 0; }
   .who-name { font-weight: 700; font-size: var(--fs-body); line-height: 1.2; }
   .who-role { font-size: var(--fs-small); font-weight: 500; color: var(--muted); line-height: 1.4; }
-  .speak { width: 48px; height: 48px; border-radius: var(--r-sm); border: 1px solid var(--glass-border); background: var(--glass-2); color: var(--text); font-size: 1.05rem; cursor: pointer; }
+  .speak { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-sm); border: 1px solid var(--glass-border); background: var(--glass-2); color: var(--text); font-size: 1.05rem; cursor: pointer; }
   .speak[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-ink); }
 
   .screen { flex: 1; overflow-y: auto; padding: 18px 16px 24px; overscroll-behavior: contain; scrollbar-width: thin; }
-  .screen h2 { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 6px; }
+  .screen h2 { font-family: var(--font-display); font-size: var(--fs-title); font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin: 0 0 6px; }
   .screen h2:focus { outline: none; }
   .screen h2:focus-visible { outline: 3px solid var(--focus); }
   .screen h3 { font-size: var(--fs-h3); font-weight: 700; line-height: 1.3; margin: 20px 0 8px; }
@@ -180,8 +181,8 @@
   .card.hero { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(45,212,191,.08)); border-color: rgba(52,211,153,.45); }
   :root[data-contrast="high"] .card.hero { background: #fff; }
   .card.note { color: var(--warn-ink); background: var(--note-bg); border-color: rgba(245,184,61,.45); }
-  .big { font-family: var(--font-display); font-size: var(--fs-hero); font-weight: 600; line-height: 1.05; letter-spacing: -.02em; }
-  .mid { font-family: var(--font-display); font-size: var(--fs-mid); font-weight: 600; line-height: 1.2; letter-spacing: -.005em; }
+  .big { font-family: var(--font-display); font-size: var(--fs-hero); font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+  .mid { font-family: var(--font-display); font-size: var(--fs-mid); font-weight: 750; line-height: 1.15; letter-spacing: -.01em; }
   .small { font-size: var(--fs-small); font-weight: 500; color: var(--muted); line-height: 1.4; }
   .muted { color: var(--muted); }
   .btn {
@@ -210,13 +211,13 @@
   .field { margin-bottom: 16px; }
   .err { color: var(--danger); font-weight: 700; margin: 6px 0 0; font-size: .9rem; }
   ul.facts { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
-  ul.facts li { display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; align-items: center; font-size: var(--fs-body); color: var(--body); }
+  ul.facts li { display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: center; font-size: var(--fs-body); color: var(--body); }
   ul.facts li strong { color: var(--text); }
   ul.facts .ico { width: 2.2rem; height: 2.2rem; border-radius: var(--r-xs); display: grid; place-items: center; background: var(--glass-3); border: 1px solid var(--glass-border); }
 
   .stepper { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; margin-bottom: 10px; }
   .stepper button { width: 52px; height: 52px; border-radius: 18px; border: 1px solid var(--glass-border); background: var(--glass-3); color: var(--text); font-size: 1.5rem; font-weight: 700; cursor: pointer; }
-  .stepper output { text-align: center; font-family: var(--font-display); font-size: var(--fs-mid); font-weight: 600; letter-spacing: 0; }
+  .stepper output { text-align: center; font-family: var(--font-display); font-size: var(--fs-mid); font-weight: 750; letter-spacing: -.01em; }
 
   .bar { height: 12px; border-radius: var(--r-pill); background: var(--track); border: 1px solid var(--glass-border); overflow: hidden; margin: 6px 0 4px; }
   .bar > span { display: block; height: 100%; background: var(--fill); border-radius: var(--r-pill); }
@@ -227,7 +228,7 @@
   .ring .bg { stroke: var(--track); }
   .ring .fg { stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
   :root[data-contrast="high"] .ring .fg { stroke: #00402b; }
-  .ring text { fill: var(--text); font-family: var(--font-display); font-weight: 600; }
+  .ring text { fill: var(--text); font-family: var(--font-display); font-weight: 800; }
   .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: var(--r-pill); font-weight: 700; font-size: .78rem; color: var(--brand-text); background: rgba(16,185,129,.14); border: 1px solid rgba(16,185,129,.45); }
   .status.wait { color: var(--warn-ink); background: rgba(245,184,61,.14); border-color: rgba(245,184,61,.45); }
   :root[data-contrast="high"] .status { background: #fff; border: 2px solid #000; }
@@ -238,9 +239,9 @@
   dl { margin: 0; }
 
   ul.feed { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-  ul.feed li { background: var(--glass-2); border: 1px solid var(--glass-border); border-radius: var(--r-md); padding: 12px; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; }
+  ul.feed li { background: var(--glass-2); border: 1px solid var(--glass-border); border-left: 4px solid var(--ev, var(--glass-border)); border-radius: var(--r-md); padding: 12px; }
   ul.feed .ico { width: 2.2rem; height: 2.2rem; border-radius: var(--r-xs); display: grid; place-items: center; background: var(--glass-3); font-size: 1.05rem; }
-  ul.feed .t { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-h3); letter-spacing: 0; }
+  ul.feed .t { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-h3); letter-spacing: 0; }
   ul.feed li:has(.mono) .t { color: var(--brand-text); } /* receipts: +$4.500 */
   ul.feed .d { font-size: .88rem; color: var(--body); }
   ul.feed .d strong { color: var(--text); }
@@ -255,9 +256,8 @@
     position: relative; min-height: 92px; border-radius: var(--r-sm); border: 1px solid var(--glass-border); background: var(--glass-2);
     color: var(--text); font: inherit; cursor: pointer; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-align: center;
   }
-  .product .emo { font-size: 1.6rem; line-height: 1.15; }
   .product .pn { font-weight: 500; font-size: .74rem; line-height: 1.2; color: var(--body); }
-  .product .pp { font-family: var(--font-display); font-weight: 600; font-size: .86rem; }
+  .product .pp { font-family: var(--font-display); font-weight: 700; font-size: .86rem; }
   .product .count { position: absolute; top: 5px; right: 5px; min-width: 22px; height: 22px; border-radius: 11px; background: var(--btn-bg); color: var(--btn-ink); font-weight: 800; font-size: .72rem; display: grid; place-items: center; padding: 0 5px; }
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .seg label {
@@ -279,10 +279,22 @@
 
   /* Wallet consent: indigo = someone else's app */
   .wallet-head { margin: -18px -16px 16px; padding: 16px; background: var(--wallet); color: var(--wallet-ink); }
-  .wallet-head .wt { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+  .wallet-head .wt { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
   .perm { border-radius: 20px; padding: 14px; margin-bottom: 10px; background: var(--glass-2); border: 2px solid var(--wallet-line); color: var(--body); }
   .perm strong { color: var(--text); }
   .perm .pt { font-size: var(--fs-h3); font-weight: 700; line-height: 1.3; color: var(--text); }
+  details.more { margin-top: 8px; }
+  details.more summary {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 32px; cursor: pointer; list-style: none;
+    font-size: var(--fs-small); font-weight: 700; color: var(--brand-text);
+  }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::after { content: ""; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s; }
+  details.more[open] summary::after { transform: rotate(-135deg) translateY(-1px); }
+  details.more summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+  .more-body { padding-top: 6px; font-size: .9rem; color: var(--body); }
+  .more-body strong { color: var(--text); }
+  .more-body ul.facts { margin-top: 4px; }
   .perm-num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--wallet); color: var(--wallet-ink); font-weight: 800; font-size: .8rem; margin-right: 6px; }
 
   /* Money flying between phones */
@@ -310,6 +322,14 @@
     .phone { --pw: min(400px, calc(100vw - 32px)); flex: none; height: 80dvh; }
     .topbar { position: static; }
   }
+
+  /* Accents stay inside the spec: emerald = money, amber = limits, ink-500 = neutral */
+  .toast { border-left: 4px solid #34D399; }
+  ul.facts .bullet { width: 10px; height: 10px; border-radius: 50%; background: var(--fill); }
+  .product .ph { width: 52px; height: 52px; border-radius: var(--r-xs); object-fit: cover; margin-bottom: 6px; border: 1px solid var(--glass-border); background: var(--glass-3); }
+  :root[data-contrast="high"] .toast { border-left-color: #000; }
+  :root[data-contrast="high"] ul.feed li { border-left-color: #000 !important; }
+  :root[data-contrast="high"] .avatar { box-shadow: 0 0 0 2px #000; }
 </style>
 </head>
 <body>
@@ -319,10 +339,10 @@
   <div class="date-pill" id="date"></div>
   <div class="spacer"></div>
   <div class="ctl-group" role="group" aria-label="Simulación">
-    <button class="pill" type="button" data-act="nextDay" aria-label="Siguiente día">🌙 +1 día</button>
-    <button class="pill" type="button" data-act="nextWeek" aria-label="Siguiente semana">📅 +1 semana</button>
-    <button class="pill" type="button" data-act="replay" aria-label="Repetir la última venta (prueba de duplicado)">🔁 Repetir venta</button>
-    <button class="pill" type="button" data-act="autoFinish">⏩ Hasta terminar</button>
+    <button class="pill" type="button" data-act="nextDay" aria-label="Siguiente día">+1 día</button>
+    <button class="pill" type="button" data-act="nextWeek" aria-label="Siguiente semana">+1 semana</button>
+    <button class="pill" type="button" data-act="replay" aria-label="Repetir la última venta (prueba de duplicado)">Repetir venta</button>
+    <button class="pill" type="button" data-act="autoFinish">Hasta terminar</button>
     <button class="pill" type="button" data-act="reset">↺ Reiniciar</button>
   </div>
   <div class="ctl-group" role="group" aria-label="Ayudas de lectura">
@@ -349,23 +369,45 @@ const TIENDA = 'Tienda La Esquina';
 
 // Left to right follows the money: client → tendera → lender
 const ROLES = ['cliente', 'tendera', 'prestamista'];
+// Flat illustrated avatars (inline SVG, no emoji)
+const AVATARS = {
+  cliente: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" fill="#A7F3D0"/>
+    <path d="M7 48c1-9 8-14 17-14s16 5 17 14z" fill="#0D9488"/><path d="M19 34l5 6 5-6z" fill="#ECFDF5"/>
+    <rect x="20.5" y="27" width="7" height="8" rx="3" fill="#B97A4E"/><circle cx="24" cy="20" r="9" fill="#D19A6A"/>
+    <path d="M14.6 20c-.6-7 3.6-11.4 9.6-11.4 5.4 0 9.6 3.6 9.2 10.4-1.4-3-4.4-4.6-9.2-4.6-4.6 0-7.8 2-9.6 5.6z" fill="#2B1B12"/>
+    <circle cx="20.6" cy="21" r="1.1" fill="#2B1B12"/><circle cx="27.4" cy="21" r="1.1" fill="#2B1B12"/>
+    <path d="M21 25c1.8 1.4 4.2 1.4 6 0" stroke="#7A3E1D" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>`,
+  tendera: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" fill="#FFF4DC"/>
+    <path d="M7 48c1-9 8-14 17-14s16 5 17 14z" fill="#059669"/><path d="M17 37h14v11H17z" fill="#FBFDFC"/>
+    <rect x="20.5" y="27" width="7" height="8" rx="3" fill="#8A5634"/>
+    <circle cx="24" cy="7.5" r="5" fill="#4B3B36"/><path d="M14 23c-1.6-9 3-14 10-14s11.6 5 10 14c-1-4-3-6-5-7-3 2-8 2-12 1-2 1-3 3-3 6z" fill="#4B3B36"/>
+    <circle cx="24" cy="21" r="8.6" fill="#A86B43"/><path d="M15.6 19c1-5 4.4-7.6 8.4-7.6s7.6 2.6 8.4 7.6c-2-2.4-5-3.4-8.4-3.4s-6.4 1-8.4 3.4z" fill="#4B3B36"/>
+    <circle cx="15.6" cy="24.6" r="1.4" fill="#F5B83D"/><circle cx="32.4" cy="24.6" r="1.4" fill="#F5B83D"/>
+    <circle cx="20.8" cy="21.4" r="1.1" fill="#2B1B12"/><circle cx="27.2" cy="21.4" r="1.1" fill="#2B1B12"/>
+    <path d="M21.2 25.2c1.7 1.3 3.9 1.3 5.6 0" stroke="#6B2E14" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <circle cx="29.5" cy="9.5" r="2.4" fill="#F59E0B"/></svg>`,
+  prestamista: `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" fill="#D1FAE5"/>
+    <path d="M10 19 24 10l14 9z" fill="#046C4E"/><rect x="11" y="19" width="26" height="3" fill="#065F46"/>
+    <rect x="13.5" y="23" width="3.4" height="11" rx="1" fill="#059669"/><rect x="22.3" y="23" width="3.4" height="11" rx="1" fill="#059669"/><rect x="31.1" y="23" width="3.4" height="11" rx="1" fill="#059669"/>
+    <rect x="10" y="35" width="28" height="3.4" rx="1" fill="#046C4E"/><circle cx="24" cy="16" r="1.8" fill="#F5B83D"/></svg>`,
+};
 const PEOPLE = {
-  cliente:     { name: 'Carlos', role: 'Cliente', avatar: '🧑🏻', label: 'Cliente', caption: 'Compra en la tienda' },
-  tendera:     { name: TENDERA, role: 'Tendera · ' + TIENDA, avatar: '👩🏽‍🦱', label: 'Tendera', caption: 'Abona con cada venta' },
-  prestamista: { name: LENDER, role: 'Prestamista', avatar: '🏦', label: 'Prestamista', caption: 'Recibe los abonos' },
+  cliente:     { name: 'Carlos', role: 'Cliente', avatar: AVATARS.cliente, label: 'Cliente', caption: 'Compra en la tienda' },
+  tendera:     { name: TENDERA, role: 'Tendera · ' + TIENDA, avatar: AVATARS.tendera, label: 'Tendera', caption: 'Abona con cada venta' },
+  prestamista: { name: LENDER, role: 'Prestamista', avatar: AVATARS.prestamista, label: 'Prestamista', caption: 'Recibe los abonos' },
 };
 const CHANNELS = {
-  nequi: { label: 'Nequi', ico: '📱' },
-  daviplata: { label: 'Daviplata', ico: '📲' },
-  transfer: { label: 'Transferencia', ico: '🏦' },
+  nequi: { label: 'Nequi' },
+  daviplata: { label: 'Daviplata' },
+  transfer: { label: 'Transferencia' },
 };
 const PRODUCTS = [
-  { id: 'arroz', emo: '🍚', name: 'Arroz 1 kg', price: 4500 },
-  { id: 'huevos', emo: '🥚', name: 'Huevos x30', price: 18000 },
-  { id: 'leche', emo: '🥛', name: 'Leche 1 L', price: 4000 },
-  { id: 'pan', emo: '🍞', name: 'Pan', price: 2000 },
-  { id: 'aceite', emo: '🫒', name: 'Aceite 1 L', price: 12000 },
-  { id: 'cafe', emo: '☕', name: 'Café 500 g', price: 15000 },
+  { id: 'arroz', img: 'img/arroz.jpg', name: 'Arroz 1 kg', price: 4500 },
+  { id: 'huevos', img: 'img/huevos.jpg', name: 'Huevos x30', price: 18000 },
+  { id: 'leche', img: 'img/leche.jpg', name: 'Leche 1 L', price: 4000 },
+  { id: 'pan', img: 'img/pan.jpg', name: 'Pan', price: 2000 },
+  { id: 'aceite', img: 'img/aceite.jpg', name: 'Aceite 1 L', price: 12000 },
+  { id: 'cafe', img: 'img/cafe.jpg', name: 'Café 500 g', price: 15000 },
 ];
 const QUICK_AMOUNTS = [8000, 45000, 60000, 120000];
 
@@ -585,7 +627,16 @@ function ring(pct) {
 }
 
 const repaidPct = (loan) => loan ? Math.floor((loan.collected / (loan.collected + loan.balance || 1)) * 100) : 0;
-const facts = (items) => `<ul class="facts">${items.map(([i, t]) => `<li><span class="ico" aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>`;
+const facts = (items) => `<ul class="facts">${items.map(([, t]) => `<li><span class="bullet" aria-hidden="true"></span><span>${t}</span></li>`).join('')}</ul>`;
+
+// Collapsible detail. Screens re-render via innerHTML, so open state lives here.
+const openMore = new Set();
+const more = (key, label, body) => `<details class="more" data-more="${key}" ${openMore.has(key) ? 'open' : ''}>
+  <summary id="more-${key}">${label}</summary><div class="more-body">${body}</div></details>`;
+document.addEventListener('toggle', (e) => {
+  const k = e.target.dataset && e.target.dataset.more;
+  if (k) e.target.open ? openMore.add(k) : openMore.delete(k);
+}, true);
 
 // Feed ids each phone has already shown, so new rows get highlighted
 const seen = { tendera: null, prestamista: null };
@@ -600,9 +651,8 @@ function screenKey(role) {
 
 function offerSummary() {
   const o = st.offer;
-  return `<p style="margin:0">${TENDERA} recibe <strong>${money(o.principal)}</strong>.</p>
-    <p style="margin:6px 0 0">Paga el <strong>${o.pct}%</strong> de cada venta digital, con interés de <strong>${o.rate}% al año</strong> solo sobre lo que debe.</p>
-    <p style="margin:6px 0 0">Lo máximo que podrás cobrar: <strong>${money(grantTotal(o))}</strong>.</p>`;
+  return `<p style="margin:0">${TENDERA} recibe <strong>${money(o.principal)}</strong> · paga <strong>${o.pct}%</strong> por venta</p>
+    ${more('offer', 'Ver detalle', `Interés de <strong>${o.rate}% al año</strong>, solo sobre lo que debe. Lo máximo que podrás cobrar: <strong>${money(grantTotal(o))}</strong>.`)}`;
 }
 
 function viewPrestamista() {
@@ -619,13 +669,12 @@ function viewPrestamista() {
           <input type="range" id="rate" min="5" max="${TASA_USURA_EA}" step="0.5" value="${Math.min(o.rate, TASA_USURA_EA)}" aria-label="Interés al año" aria-describedby="rateHelp">
           <input type="number" id="rateNum" min="5" step="0.5" value="${o.rate}" inputmode="decimal" aria-describedby="rateHelp rateErr"> <span aria-hidden="true">%</span>
         </div>
-        <p class="small" id="rateHelp" style="margin:4px 0 0">⚖️ Tope legal (usura): <strong>${TASA_USURA_EA}% E.A.</strong> No se puede pasar. <em>(valor demo)</em></p>
-        <p class="err" id="rateErr" role="alert" ${o.rate > TASA_USURA_EA ? '' : 'hidden'}>⛔ Supera la tasa de usura. Bájalo a ${TASA_USURA_EA}% o menos.</p>
+        <p class="small" id="rateHelp" style="margin:4px 0 0">Tope legal (usura): <strong>${TASA_USURA_EA}% E.A.</strong> <em>(valor demo)</em></p>
+        <p class="err" id="rateErr" role="alert" ${o.rate > TASA_USURA_EA ? '' : 'hidden'}>Supera la tasa de usura. Bájalo a ${TASA_USURA_EA}% o menos.</p>
       </div>
       <div class="field">
         <label class="label" for="pct">Parte de cada venta: <output id="pctOut" for="pct">${o.pct}%</output></label>
         <input type="range" id="pct" min="5" max="20" step="1" value="${o.pct}" aria-valuetext="${o.pct} por ciento" style="width:100%">
-        <p class="small" style="margin:0">Más alto = paga más rápido, pero le queda menos de cada venta.</p>
       </div>
       <fieldset><legend>Plazo máximo</legend><div class="chips">
         ${[3, 6, 12].map((v) => `<button type="button" class="chip" id="tm-${v}" data-act="term" data-v="${v}" aria-pressed="${o.term === v}">${v} meses</button>`).join('')}
@@ -635,13 +684,12 @@ function viewPrestamista() {
   }
   if (st.step === 'enviada') {
     return `<h2 tabindex="-1">Oferta enviada</h2>
-      <p style="margin:8px 0 14px"><span class="status wait">⏳ Esperando a ${TENDERA}</span></p>
+      <p style="margin:8px 0 14px"><span class="status wait">Esperando a ${TENDERA}</span></p>
       <div class="card">${offerSummary()}</div>
       <button class="btn ghost" type="button" data-act="cancelOffer">Cancelar oferta</button>`;
   }
   if (st.step === 'rechazada') {
-    return `<div class="empty"><div class="ico" aria-hidden="true">🙅🏽‍♀️</div>
-      <h2 tabindex="-1">${TENDERA} no aceptó</h2>
+    return `<div class="empty"><h2 tabindex="-1">${TENDERA} no aceptó</h2>
       <p class="muted">No se creó ningún permiso. No se le cobra nada.</p></div>
       <button class="btn" type="button" data-act="newOffer">Hacer otra oferta</button>`;
   }
@@ -661,49 +709,39 @@ function viewPrestamista() {
       ${bar(L.collected, L.collected + L.balance, 'Avance del pago')}
       <p class="small" style="margin:0">${repaidPct(L)}% pagado · Falta ${money(L.balance)}</p>
     </section>
-    <section class="card" aria-labelledby="recT">
-      <h3 id="recT" style="margin:0 0 4px">Cuentas claras</h3>
-      <dl>
+    ${paid ? `<div class="card note"><p style="margin:0">Permiso de cobro cerrado.</p></div>` : ''}
+    <section class="card">
+      <p style="margin:0;font-weight:750;color:var(--brand-text)">✓ Cuentas claras: coinciden al peso</p>
+      ${more('rec', 'Ver cuentas', `<dl>
         <div class="kv"><dt>Libro de ${APP}</dt><dd>${money(L.collected)}</dd></div>
         <div class="kv"><dt>Tu billetera</dt><dd>${money(L.collected)}</dd></div>
-      </dl>
-      <p style="margin:6px 0 0;font-weight:750;color:var(--brand-text)">✓ Coinciden al peso</p>
-    </section>
-    ${paid ? `<div class="card note"><p style="margin:0">🔒 El permiso de cobro se cerró solo. Ya no puedes cobrar de la cuenta de ${TENDERA}.</p></div>` : ''}
-    <section class="card" aria-labelledby="sigT">
-      <h3 id="sigT" style="margin:0 0 4px">Señales</h3>
-      <p style="margin:0;font-size:.92rem">Ventas digitales esta semana: <strong>${money(salesWeek)}</strong></p>
-      <p class="small" style="margin:4px 0 0">Si bajan, lo ves antes de que haya un problema.</p>
-    </section>
-    <section class="card" aria-labelledby="condT">
-      <h3 id="condT" style="margin:0 0 4px">Condiciones</h3>
-      <dl>
+      </dl>`)}
+      <p style="margin:12px 0 0;font-size:.92rem">Ventas digitales esta semana: <strong>${money(salesWeek)}</strong></p>
+      ${more('cond', 'Ver condiciones', `<dl>
         <div class="kv"><dt>Prestado</dt><dd>${money(L.principal)}</dd></div>
         <div class="kv"><dt>Parte de cada venta</dt><dd>${L.pct}%</dd></div>
         <div class="kv"><dt>Interés</dt><dd>${L.rate}% E.A.</dd></div>
         <div class="kv"><dt>Intereses generados</dt><dd>${money(L.interest)}</dd></div>
         <div class="kv"><dt>Permiso total, sin vencimiento</dt><dd>${money(L.grantTotal)}</dd></div>
         <div class="kv"><dt>Topes que eligió ella</dt><dd>${money(st.caps.week)}/sem · ${money(st.caps.month)}/mes</dd></div>
-      </dl>
+      </dl>`)}
     </section>
     <h3>Recibos (${receipts.length})</h3>
-    ${receipts.length ? `<ul class="feed">${receipts.slice(0, 30).map((e) => `<li class="${isFresh('prestamista', e) ? 'fresh' : ''}"><span class="ico" aria-hidden="true">🧾</span><div>
+    ${receipts.length ? `<ul class="feed">${receipts.slice(0, 30).map((e) => `<li class="${isFresh('prestamista', e) ? 'fresh' : ''}" style="--ev:${EV.venta}"><div>
         <div class="t">+${money(e.deduction)}</div>
-        <div class="d">Venta por ${CHANNELS[e.channel].label} de ${money(e.amount)} · ${fechaCorta(e.day)}</div>
-        <div class="mono" title="${e.paymentId}">${e.paymentId}</div></div></li>`).join('')}</ul>`
+        <div class="d">${CHANNELS[e.channel].label} · ${fechaCorta(e.day)}</div>
+        ${more('r' + e.id, 'Comprobante', `Venta de ${money(e.amount)}<div class="mono" title="${e.paymentId}">${e.paymentId}</div>`)}</div></li>`).join('')}</ul>`
       : `<p class="muted">Aún no hay abonos. Llegan solos cuando la tienda vende.</p>`}`;
 }
 
 function viewTendera() {
   const o = st.offer;
   if (st.step === 'borrador') {
-    return `<div class="empty"><div class="ico" aria-hidden="true">🌱</div>
-      <h2 tabindex="-1">Todavía no tienes ofertas</h2>
+    return `<div class="empty"><h2 tabindex="-1">Todavía no tienes ofertas</h2>
       <p class="muted">Cuando un prestamista te ofrezca un crédito, lo verás aquí.</p></div>`;
   }
   if (st.step === 'rechazada') {
-    return `<div class="empty"><div class="ico" aria-hidden="true">👋</div>
-      <h2 tabindex="-1">Dijiste que no</h2>
+    return `<div class="empty"><h2 tabindex="-1">Dijiste que no</h2>
       <p class="muted">No diste ningún permiso. Nadie puede cobrarte nada.</p></div>`;
   }
   if (st.step === 'enviada' && st.tScreen === 'oferta') {
@@ -713,12 +751,15 @@ function viewTendera() {
         <div class="big">${money(o.principal)}</div>
       </div>
       ${facts([
-        ['🧾', `Pagas el <strong>${o.pct}%</strong> de cada venta por Nequi, Daviplata o transferencia.`],
-        ['🌧️', 'Si un día no vendes, ese día <strong>no pagas</strong>. Sin multas.'],
-        ['💵', 'Lo que vendes en efectivo <strong>no se toca</strong>.'],
-        ['📈', `Interés: ${o.rate}% al año, solo sobre lo que debes.`],
-        ['🔒', `En total nunca te pueden cobrar más de <strong>${money(grantTotal(o))}</strong>.`],
+        ['', `Pagas el <strong>${o.pct}%</strong> de cada venta digital.`],
+        ['', 'Si no vendes, <strong>no pagas</strong>.'],
       ])}
+      ${more('terms', 'Ver todas las condiciones', facts([
+        ['', 'Cuenta Nequi, Daviplata o transferencia. Sin multas.'],
+        ['', 'Lo que vendes en efectivo <strong>no se toca</strong>.'],
+        ['', `Interés: ${o.rate}% al año, solo sobre lo que debes.`],
+        ['', `En total nunca te pueden cobrar más de <strong>${money(grantTotal(o))}</strong>.`],
+      ]))}
       <button class="btn" type="button" data-act="toTopes" style="margin-top:18px">Seguir: elegir mis topes</button>
       <button class="btn ghost" type="button" data-act="reject">No me interesa</button>`;
   }
@@ -727,27 +768,24 @@ function viewTendera() {
     const bad = c.month < c.week;
     const weeks = Math.ceil(g / Math.min(c.week, c.month * 12 / 52));
     return `<h2 tabindex="-1">Tú pones el límite</h2>
-      <p class="lead">Lo máximo que puede salir de tu cuenta. Tu billetera lo cuida, no nosotros.</p>
+      <p class="lead">Lo máximo que puede salir de tu cuenta.</p>
       ${capStepper('week', 'Máximo por semana', c.week, 5000, [20000, 30000, 50000])}
       ${capStepper('month', 'Máximo por mes', c.month, 10000, [80000, 100000, 150000])}
-      ${bad ? `<p class="err" role="alert">⛔ El tope del mes no puede ser menor que el de la semana.</p>`
-        : `<div class="card note"><p style="margin:0">💡 Con estos topes terminarías de pagar en unas <strong>${weeks} semanas</strong> como mínimo, si vendes bien.</p></div>`}
+      ${bad ? `<p class="err" role="alert">El tope del mes no puede ser menor que el de la semana.</p>`
+        : `<div class="card note"><p style="margin:0">Terminas en unas <strong>${weeks} semanas</strong> o más.</p></div>`}
       <button class="btn" type="button" data-act="toWallet" ${bad ? 'disabled' : ''}>Seguir: autorizar en mi billetera</button>
       <button class="btn ghost" type="button" data-act="toOferta">Volver</button>`;
   }
   if (st.step === 'enviada' && st.tScreen === 'billetera') {
-    return `<div class="wallet-head"><div class="wt">🔐 Tu billetera</div><div style="font-size:.82rem;opacity:.9">Solicitud de permiso</div></div>
+    return `<div class="wallet-head"><div class="wt"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Tu billetera</div><div style="font-size:.82rem;opacity:.9">Solicitud de permiso</div></div>
       <h2 tabindex="-1">${LENDER} pide permiso para cobrar de tu cuenta</h2>
-      <p class="lead">Lee los 2 permisos. Tú decides.</p>
       <div class="perm">
         <div class="pt"><span class="perm-num" aria-hidden="true">1</span>Cobrar hasta ${money(grantTotal(o))} en total</div>
-        <p style="margin:6px 0 0;font-size:.92rem">Es el valor del crédito con intereses. <strong>No tiene fecha de vencimiento</strong>: se cierra solo cuando termines de pagar.</p>
+        ${more('perm1', '¿Por qué este valor?', 'Es el crédito con intereses. <strong>No vence</strong>: se cierra solo cuando termines de pagar. Cada cobro deja un recibo en tu billetera.')}
       </div>
       <div class="perm">
-        <div class="pt"><span class="perm-num" aria-hidden="true">2</span>Tus topes</div>
-        <p style="margin:6px 0 0;font-size:.92rem">Nunca más de <strong>${money(st.caps.week)} por semana</strong>.<br>Nunca más de <strong>${money(st.caps.month)} por mes</strong>.</p>
+        <div class="pt"><span class="perm-num" aria-hidden="true">2</span>Máximo ${money(st.caps.week)}/semana · ${money(st.caps.month)}/mes</div>
       </div>
-      <p class="small">Cada cobro queda en tu billetera con su recibo.</p>
       <button class="btn" type="button" data-act="authorize">✓ Autorizar</button>
       <button class="btn ghost" type="button" data-act="reject">✕ Rechazar</button>`;
   }
@@ -755,24 +793,24 @@ function viewTendera() {
   const wk = collectedIn(st, weekKey), mo = collectedIn(st, monthKey);
   return `<h2 tabindex="-1">Mi crédito</h2>
     <p class="lead">${fechaLarga(st.day)}</p>
-    ${paid ? `<div class="card hero"><p class="mid" style="margin:0">🎉 ¡Terminaste de pagar!</p>
-      <p style="margin:6px 0 0">El permiso de ${LENDER} se cerró solo. Ya no pueden cobrarte nada.</p></div>` : ''}
+    ${paid ? `<div class="card hero"><p class="mid" style="margin:0">¡Terminaste de pagar!</p>
+      <p class="small" style="margin:4px 0 0">Ya no pueden cobrarte nada.</p></div>` : ''}
     <section class="card" aria-label="Resumen del crédito">
       <div class="ring-wrap">${ring(repaidPct(L))}
         <div><div class="small">Te falta pagar</div><div class="big" style="font-size:1.6rem">${money(L.balance)}</div>
         <div class="small" style="margin-top:2px">Ya pagaste ${money(L.collected)}</div>
         <p style="margin:6px 0 0"><span class="status">${paid ? '✓ Pagado' : '✓ Al día'}</span></p></div>
       </div>
-      ${L.pending > 0 ? `<p style="margin:12px 0 0;font-size:.92rem">💾 Guardado para la próxima venta: <strong>${money(L.pending)}</strong></p>` : ''}
+      ${L.pending > 0 ? `<p style="margin:12px 0 0;font-size:.92rem">Guardado para la próxima venta: <strong>${money(L.pending)}</strong></p>` : ''}
     </section>
     ${paid ? '' : `<section class="card" aria-labelledby="capsT">
       <h3 id="capsT" style="margin:0 0 4px">Tus topes</h3>
       <p style="margin:8px 0 0;font-size:.92rem">Esta semana: <strong>${money(wk)}</strong> de ${money(st.caps.week)}</p>
       ${bar(wk, st.caps.week, 'Tope de la semana')}
-      ${wk >= st.caps.week ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado: lo que vendas esta semana es todo tuyo.</p>` : ''}
+      ${wk >= st.caps.week ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado</p>` : ''}
       <p style="margin:12px 0 0;font-size:.92rem">Este mes: <strong>${money(mo)}</strong> de ${money(st.caps.month)}</p>
       ${bar(mo, st.caps.month, 'Tope del mes')}
-      ${mo >= st.caps.month ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado: lo que vendas este mes es todo tuyo.</p>` : ''}
+      ${mo >= st.caps.month ? `<p style="margin:0;font-weight:750;font-size:.9rem">✓ Tope alcanzado</p>` : ''}
     </section>`}
     <h3>Movimientos</h3>
     ${feedList()}`;
@@ -789,6 +827,11 @@ function capStepper(key, label, value, step, presets) {
   </fieldset>`;
 }
 
+// Accent per event type (left edge of each feed row)
+const EV = { venta: '#10B981', desembolso: '#10B981', pagado: '#10B981', repetida: '#F5B83D', dia: '#6F8A7E', semana: '#6F8A7E', mes: '#6F8A7E' };
+const LIMIT_REASONS = ['guardado', 'tope_semana', 'tope_mes', 'tope_permiso'];
+const evColor = (e) => (e.type === 'venta' && LIMIT_REASONS.includes(e.reason) ? '#F5B83D' : EV[e.type] || 'var(--glass-border)');
+
 function feedItem(e) {
   const ch = e.channel ? CHANNELS[e.channel] : null;
   switch (e.type) {
@@ -796,31 +839,31 @@ function feedItem(e) {
       const d = {
         enviado: `✓ Abonaste <strong>${money(e.deduction)}</strong>${e.includedCarry ? ` (incluye ${money(e.includedCarry)} guardado)` : ''}.`,
         ultimo: `✓ Último abono: <strong>${money(e.deduction)}</strong>.`,
-        guardado: `💾 ${money(e.pending)} guardado para la próxima venta. Muy poquito para enviarlo solo.`,
-        tope_semana: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope de la semana. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope de la semana. Esta venta es toda tuya.`,
-        tope_mes: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> y llegaste a tu tope del mes. Lo demás es tuyo.` : `✓ Ya cumpliste tu tope del mes. Esta venta es toda tuya.`,
+        guardado: `${money(e.pending)} guardado para la próxima venta.`,
+        tope_semana: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> · tope semanal` : `✓ Tope semanal cumplido. Toda tuya.`,
+        tope_mes: e.deduction > 0 ? `✓ Abonaste <strong>${money(e.deduction)}</strong> · tope mensual` : `✓ Tope mensual cumplido. Toda tuya.`,
         tope_permiso: `✓ Abonaste <strong>${money(e.deduction)}</strong> (lo máximo del permiso).`,
         sin_credito: 'No tenías crédito activo. No se cobró nada.',
         pagado: 'Ya terminaste de pagar. No se cobró nada.',
         invalida: 'Valor no válido. No se cobró nada.',
       }[e.reason];
-      return [ch.ico, `Venta por ${ch.label} · ${money(e.amount)}`, d];
+      return ['', `Venta por ${ch.label} · ${money(e.amount)}`, d];
     }
-    case 'repetida': return ['🔁', 'Aviso repetido', `La red avisó otra vez la venta de ${money(e.amount)}. <strong>No se cobró dos veces.</strong>`];
-    case 'dia': return ['🌙', 'Nuevo día', `Si no vendes, no pagas.${e.interest ? ` Intereses del día: ${money(e.interest)}.` : ''}`];
-    case 'semana': return ['📅', 'Nueva semana', `Tu tope vuelve a ${money(st.caps.week)}.`];
-    case 'mes': return ['🗓️', 'Nuevo mes', `Tu tope del mes vuelve a ${money(st.caps.month)}.`];
-    case 'desembolso': return ['💰', 'Recibiste el préstamo', `${LENDER} te envió ${money(e.amount)}.`];
-    case 'pagado': return ['🎉', '¡Crédito pagado!', `El permiso de ${LENDER} se cerró solo.`];
-    default: return ['•', '', ''];
+    case 'repetida': return ['', 'Aviso repetido', `<strong>No se cobró dos veces.</strong>`];
+    case 'dia': return ['', 'Nuevo día', `Si no vendes, no pagas.${e.interest ? ` Intereses del día: ${money(e.interest)}.` : ''}`];
+    case 'semana': return ['', 'Nueva semana', `Tu tope vuelve a ${money(st.caps.week)}.`];
+    case 'mes': return ['', 'Nuevo mes', `Tu tope del mes vuelve a ${money(st.caps.month)}.`];
+    case 'desembolso': return ['', 'Recibiste el préstamo', `${LENDER} te envió ${money(e.amount)}.`];
+    case 'pagado': return ['', '¡Crédito pagado!', `El permiso de ${LENDER} se cerró solo.`];
+    default: return ['', '', ''];
   }
 }
 
 function feedList() {
   if (!st.feed.length) return `<p class="muted">Aún no hay movimientos.</p>`;
   return `<ul class="feed">${st.feed.slice(0, 40).map((e) => {
-    const [ico, t, d] = feedItem(e);
-    return `<li class="${isFresh('tendera', e) ? 'fresh' : ''}"><span class="ico" aria-hidden="true">${ico}</span><div><div class="t">${t}</div><div class="d">${d}</div><div class="small">${fechaCorta(e.day)}</div></div></li>`;
+    const [, t, d] = feedItem(e);
+    return `<li class="${isFresh('tendera', e) ? 'fresh' : ''}" style="--ev:${evColor(e)}"><div><div class="t">${t}</div><div class="d">${d}</div><div class="small">${fechaCorta(e.day)}</div></div></li>`;
   }).join('')}</ul>`;
 }
 
@@ -834,13 +877,13 @@ function viewCliente() {
   const c = st.cart, total = cartTotal(), p = st.lastPurchase;
   return `<h2 tabindex="-1">${TIENDA}</h2>
     <p class="lead">Hola, Carlos. ¿Qué vas a llevar?</p>
-    ${p ? `<div class="card hero banner" id="lastBuy"><span class="ico" aria-hidden="true">✅</span><div>
+    ${p ? `<div class="card hero banner" id="lastBuy"><div>
       <strong>Pagaste ${money(p.amount)}</strong><div class="small">Por ${CHANNELS[p.channel].label}. Llega completo a la tienda.</div></div></div>` : ''}
     <div class="products">${PRODUCTS.map((pr) => {
       const n = c.items[pr.id] || 0;
       return `<button type="button" class="product" id="p-${pr.id}" data-act="add" data-id="${pr.id}" aria-label="Agregar ${pr.name}, ${nf.format(pr.price)} pesos${n ? `. Llevas ${n}` : ''}">
         ${n ? `<span class="count" aria-hidden="true">${n}</span>` : ''}
-        <span class="emo" aria-hidden="true">${pr.emo}</span><span class="pn">${pr.name}</span><span class="pp">${money(pr.price)}</span></button>`;
+        <img class="ph" src="${pr.img}" alt="" width="52" height="52" loading="lazy"><span class="pn">${pr.name}</span><span class="pp">${money(pr.price)}</span></button>`;
     }).join('')}</div>
     <fieldset style="margin-top:16px"><legend>O un valor exacto</legend>
       <div class="chips">${QUICK_AMOUNTS.map((v) => `<button type="button" class="chip" id="amt-${v}" data-act="amount" data-v="${v}" aria-pressed="${c.custom === v}">${money(v)}</button>`).join('')}</div>
@@ -848,7 +891,7 @@ function viewCliente() {
         <input type="number" id="customAmt" min="0" step="500" inputmode="numeric" value="${c.custom && !QUICK_AMOUNTS.includes(c.custom) ? c.custom : ''}" style="width:8em"></div>
     </fieldset>
     <fieldset><legend>¿Cómo pagas?</legend><div class="seg">
-      ${Object.entries(CHANNELS).map(([k, ch]) => `<label><input type="radio" name="channel" value="${k}" ${c.channel === k ? 'checked' : ''}><span class="ico" aria-hidden="true">${ch.ico}</span>${ch.label}</label>`).join('')}
+      ${Object.entries(CHANNELS).map(([k, ch]) => `<label><input type="radio" name="channel" value="${k}" ${c.channel === k ? 'checked' : ''}>${ch.label}</label>`).join('')}
     </div></fieldset>
     <div class="paybar">
       <div class="row"><span class="small" style="color:var(--text);font-weight:650">Total</span><span class="mid" id="totalOut">${money(total)}</span></div>
@@ -907,15 +950,15 @@ function buildStage() {
   $('#stage').innerHTML = ROLES.map((r, i) => {
     const p = PEOPLE[r];
     return `${i ? '<div class="flow" aria-hidden="true">→</div>' : ''}
-    <section class="col" aria-labelledby="label-${r}">
+    <section class="col" data-role="${r}" aria-labelledby="label-${r}">
       <div class="col-label"><span class="step" aria-hidden="true">${i + 1}</span><strong id="label-${r}">${p.label}</strong><div>${p.caption}</div></div>
       <div class="phone" id="phone-${r}" data-role="${r}">
         <div class="notch" aria-hidden="true"></div>
-        <div class="statusbar" aria-hidden="true"><span class="clock"></span><span>📶 🔋</span></div>
+        <div class="statusbar" aria-hidden="true"><span class="clock"></span></div>
         <div class="appbar">
           <span class="avatar" aria-hidden="true">${p.avatar}</span>
           <div class="who"><div class="who-name">${p.name}</div><div class="who-role">${p.role}</div></div>
-          ${canSpeak ? `<button class="speak" type="button" data-speak="${r}" aria-pressed="false" aria-label="Escuchar la pantalla de ${p.name}">🔊</button>` : ''}
+          ${canSpeak ? `<button class="speak" type="button" data-speak="${r}" aria-pressed="false" aria-label="Escuchar la pantalla de ${p.name}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>` : ''}
         </div>
         <div class="screen" id="screen-${r}"></div>
         <div class="toast" id="toast-${r}" aria-hidden="true"></div>
@@ -933,7 +976,7 @@ function render() {
   $('#btnContrast').setAttribute('aria-pressed', String(st.prefs.contrast));
   $('#sizeLabel').textContent = SIZE_LABELS[st.prefs.size];
   $('#btnSize').setAttribute('aria-label', `Tamaño de letra: ${SIZE_NAMES[st.prefs.size]}. Cambiar`);
-  $('#date').textContent = '📅 ' + fechaLarga(st.day);
+  $('#date').textContent = fechaLarga(st.day);
   document.querySelectorAll('.clock').forEach((c) => { c.textContent = fechaCorta(st.day); });
 
   for (const r of ROLES) {
@@ -974,9 +1017,9 @@ const actions = {
   sendOffer(b) {
     if (st.offer.rate > TASA_USURA_EA) return false;
     st.step = 'enviada'; st.tScreen = 'oferta';
-    flyCoin(b, 'tendera', '✉️ Oferta');
+    flyCoin(b, 'tendera', 'Oferta');
     ping('tendera', 900);
-    toast('tendera', `✉️ ${LENDER} te hizo una oferta`, 900);
+    toast('tendera', `${LENDER} te hizo una oferta`, 900);
     announce(`Oferta enviada. ${TENDERA} recibió una oferta de ${pesos(st.offer.principal)}.`);
   },
   cancelOffer() { st.step = 'borrador'; announce('Oferta cancelada.'); },
@@ -990,7 +1033,7 @@ const actions = {
     if (!confirm('¿Seguro que no quieres el crédito?')) return false;
     st.step = 'rechazada';
     ping('prestamista', 200);
-    toast('prestamista', `🙅🏽‍♀️ ${TENDERA} no aceptó la oferta`, 200);
+    toast('prestamista', `${TENDERA} no aceptó la oferta`, 200);
     announce(`${TENDERA} rechazó la oferta. No se dio ningún permiso.`);
   },
   authorize(b) {
@@ -1003,8 +1046,8 @@ const actions = {
     flyCoin(phoneEl('prestamista'), 'tendera', money(o.principal), 300);
     ping('prestamista', 100);
     ping('tendera', 1300);
-    toast('prestamista', `✅ ${TENDERA} autorizó. Le enviaste ${money(o.principal)}`, 100);
-    toast('tendera', `💰 Recibiste ${money(o.principal)}`, 1300);
+    toast('prestamista', `${TENDERA} autorizó. Le enviaste ${money(o.principal)}`, 100);
+    toast('tendera', `Recibiste ${money(o.principal)}`, 1300);
     announce(`${TENDERA} autorizó el permiso. Recibió ${pesos(o.principal)}.`);
   },
   add(b) { st.cart.custom = 0; st.cart.items[b.dataset.id] = (st.cart.items[b.dataset.id] || 0) + 1; },
@@ -1022,13 +1065,13 @@ const actions = {
     if (e.deduction > 0) {
       flyCoin(phoneEl('tendera'), 'prestamista', '+' + money(e.deduction), 1050);
       ping('prestamista', 2000);
-      toast('tendera', `${CHANNELS[channel].ico} Venta ${money(amount)} · abonaste ${money(e.deduction)}`, 950);
-      toast('prestamista', `🧾 Recibiste ${money(e.deduction)} de ${TENDERA}`, 2000);
+      toast('tendera', `Venta ${money(amount)} · abonaste ${money(e.deduction)}`, 950);
+      toast('prestamista', `Recibiste ${money(e.deduction)} de ${TENDERA}`, 2000);
       msgs.push(`${TENDERA} abonó ${pesos(e.deduction)} automáticamente.`);
-      if (st.step === 'pagado') { toast('tendera', '🎉 ¡Terminaste de pagar!', 2600); msgs.push('El crédito quedó pagado.'); }
+      if (st.step === 'pagado') { toast('tendera', '¡Terminaste de pagar!', 2600); msgs.push('El crédito quedó pagado.'); }
     } else {
-      const why = { guardado: `💾 ${money(e.pending)} guardado para la próxima`, tope_semana: '✓ Tope de la semana: esta venta es toda tuya', tope_mes: '✓ Tope del mes: esta venta es toda tuya' }[e.reason];
-      toast('tendera', `${CHANNELS[channel].ico} Venta ${money(amount)}${why ? ' · ' + why : ''}`, 950);
+      const why = { guardado: `${money(e.pending)} guardado para la próxima`, tope_semana: '✓ Tope de la semana: esta venta es toda tuya', tope_mes: '✓ Tope del mes: esta venta es toda tuya' }[e.reason];
+      toast('tendera', `Venta ${money(amount)}${why ? ' · ' + why : ''}`, 950);
       msgs.push(why ? why.replace(/^\S+\s/, '') + '.' : 'No se cobró nada.');
     }
     announce(msgs.join(' '));
@@ -1039,29 +1082,29 @@ const actions = {
     if (r.newWeek) addFeed({ type: 'semana', day: st.day });
     else addFeed({ type: 'dia', day: st.day, interest: r.interest });
     ['tendera', 'prestamista'].forEach((x) => ping(x));
-    toast('tendera', r.newWeek ? '📅 Nueva semana: tu tope se reinicia' : '🌙 Nuevo día. Si no vendes, no pagas');
+    toast('tendera', r.newWeek ? 'Nueva semana: tu tope se reinicia' : 'Nuevo día. Si no vendes, no pagas');
     announce(`Nuevo día: ${fechaLarga(st.day)}.${r.newWeek ? ' Los topes de la semana se reinician.' : ''}`);
   },
   nextWeek() {
     avanzar(7 - ((st.day - 1) % 7), false); // salta al próximo lunes
     ['tendera', 'prestamista'].forEach((x) => ping(x));
-    toast('tendera', `📅 Nueva semana: tu tope vuelve a ${money(st.caps.week)}`);
+    toast('tendera', `Nueva semana: tu tope vuelve a ${money(st.caps.week)}`);
     announce(`Nueva semana: ${fechaLarga(st.day)}. El tope vuelve a ${pesos(st.caps.week)}.`);
   },
   replay() {
     if (!st.lastSale) { toast('cliente', 'Primero haz una compra'); announce('Primero haz una compra como cliente.'); return; }
     procesarVenta(st.lastSale.channel, st.lastSale.amount, st.lastSale.eventId);
     ping('tendera'); ping('prestamista');
-    toast('tendera', '🔁 Aviso repetido: no se cobró dos veces');
-    toast('prestamista', '🔁 Aviso repetido: $0 cobrado');
+    toast('tendera', 'Aviso repetido: no se cobró dos veces');
+    toast('prestamista', 'Aviso repetido: $0 cobrado');
     announce('La red repitió el aviso de la última venta. No se cobró dos veces.');
   },
   autoFinish() {
     if (st.step !== 'activo') { announce('Primero activa el crédito.'); toast('prestamista', 'Primero activa el crédito'); return; }
     avanzar(400, true);
     ['tendera', 'prestamista'].forEach((x) => ping(x));
-    toast('tendera', st.step === 'pagado' ? '🎉 ¡Terminaste de pagar!' : 'Pasó un año de ventas');
-    toast('prestamista', st.step === 'pagado' ? '✅ Crédito pagado completo' : 'Pasó un año de ventas');
+    toast('tendera', st.step === 'pagado' ? '¡Terminaste de pagar!' : 'Pasó un año de ventas');
+    toast('prestamista', st.step === 'pagado' ? 'Crédito pagado completo' : 'Pasó un año de ventas');
     announce(st.step === 'pagado' ? `Crédito pagado el ${fechaLarga(st.day)}.` : 'Avanzamos un año de ventas.');
   },
   reset() {
